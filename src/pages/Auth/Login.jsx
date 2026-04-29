@@ -20,7 +20,7 @@ function Login() {
     } else {
       alert("Login successful!");
 
-      // 🔥 REDIRECT TO HOME
+      //REDIRECT TO HOME
       navigate("/home");
     }
   };

@@ -9,12 +9,12 @@ function Community() {
     <Layout>
       <div className="community-container">
 
-        <h2>Community Module</h2>
+        <h2>Communication Center</h2>
 
-        <div className="community-cards">
+        <div className="cards-row top-row">
 
           {/* Messaging */}
-          <div 
+          <div
             className="community-card"
             onClick={() => navigate("/messages")}
           >
@@ -23,12 +23,43 @@ function Community() {
           </div>
 
           {/* Announcements */}
-          <div 
+          <div
             className="community-card"
             onClick={() => navigate("/announcements")}
           >
             <h3>Announcements</h3>
             <p>View latest updates</p>
+          </div>
+
+          {/* Events */}
+          <div
+            className="community-card"
+            onClick={() => navigate("/events")}
+          >
+            <h3>Events</h3>
+            <p>View university events</p>
+          </div>
+
+        </div>
+
+        <div className="cards-row bottom-row">
+
+          {/* Meetings */}
+          <div
+            className="community-card"
+            onClick={() => navigate("/meetings")}
+          >
+            <h3>Meetings</h3>
+            <p>Schedule meeting with professor</p>
+          </div>
+
+          {/* Progress */}
+          <div
+            className="community-card"
+            onClick={() => navigate("/progress")}
+          >
+            <h3>Progress</h3>
+            <p>View your academic performance</p>
           </div>
 
         </div>

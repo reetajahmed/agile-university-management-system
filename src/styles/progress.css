@@ -1,0 +1,52 @@
+.progress-container {
+  padding: 30px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.progress-container h2 {
+  margin-bottom: 20px;
+  color: #1F2937;
+}
+
+.no-data {
+  text-align: center;
+  color: #6B7280;
+  margin-top: 40px;
+}
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.progress-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 5px solid #F59E0B;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  transition: 0.25s;
+}
+
+.progress-card:hover {
+  transform: translateY(-3px);
+}
+
+.progress-card h3 {
+  margin-bottom: 5px;
+  color: #F59E0B;
+}
+
+.progress-card p {
+  font-size: 14px;
+  color: #374151;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 40px;
+  color: #6B7280;
+  font-size: 16px;
+}

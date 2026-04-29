@@ -1,0 +1,50 @@
+.meetings-container {
+  padding: 30px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.meeting-form {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.meeting-form select,
+.meeting-form input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.meeting-form button {
+  background: #2D6CDF;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meeting-card {
+  background: white;
+  padding: 15px;
+  border-left: 5px solid #2D6CDF;
+  border-radius: 8px;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 20px;
+  color: #6B7280;
+  font-size: 14px;
+}
