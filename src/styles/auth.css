@@ -1,0 +1,99 @@
+/* Background */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #2D6CDF, #4A90E2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Card */
+.auth-box {
+  background: white;
+  padding: 40px 35px;
+  width: 360px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+/* Title */
+.auth-box h2 {
+  margin-bottom: 10px;
+  color: #1F2937;
+  font-size: 26px;
+}
+
+/* Subtitle */
+.auth-subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 25px;
+}
+
+/* Input group */
+.auth-input-group {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.auth-input-group label {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+/* Input focus */
+.auth-box input:focus {
+  outline: none;
+  border-color: #2D6CDF;
+  box-shadow: 0 0 0 2px rgba(45, 108, 223, 0.2);
+}
+
+/* Button */
+.auth-box button {
+  width: 100%;
+  padding: 12px;
+  background: #2D6CDF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+/* Button hover */
+.auth-box button:hover {
+  background: #1E4DB7;
+  transform: translateY(-1px);
+}
+
+/* Footer links */
+.auth-footer {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.auth-footer a {
+  color: #2D6CDF;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}

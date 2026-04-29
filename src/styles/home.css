@@ -1,0 +1,59 @@
+/* PAGE */
+.home {
+  padding: 40px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* HERO SECTION */
+.hero {
+  background: linear-gradient(135deg, #2d6cdf, #4a90e2);
+  color: white;
+  padding: 60px 30px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hero h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+/* CARDS GRID */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  color: #2d6cdf;
+}
+
+.card p {
+  color: #555;
+}
+
+/* HOVER EFFECT */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}

@@ -1,0 +1,31 @@
+.community-container {
+  padding: 20px;
+}
+
+.community-container h2 {
+  margin-bottom: 20px;
+}
+
+.community-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.community-card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.community-card:hover {
+  transform: translateY(-5px);
+}
+
+.community-card h3 {
+  color: #2D6CDF;
+}
