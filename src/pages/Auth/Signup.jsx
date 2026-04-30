@@ -10,36 +10,43 @@ function Signup() {
   const [password, setPassword] = useState("");
 
   const handleSignup = async () => {
-    // 1. Create auth user
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-    // 2. Insert into users table
-    const { error: insertError } = await supabase.from("users").insert([
-      {
-        auth_id: data.user.id,
-        name: email,
-        role: "student",
-      },
-    ]);
+  // 🔥 FIX: ALWAYS get user from session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData?.session?.user;
 
-    if (insertError) {
-      alert("Error saving user profile");
-      return;
-    }
+  if (!user) {
+    alert("Signup succeeded but no user session found");
+    return;
+  }
 
-    alert("Signup successful!");
+  const { error: insertError } = await supabase.from("users").insert([
+    {
+      auth_id: user.id,
+      name: email,
+      email: email,
+      role: "student",
+    },
+  ]);
 
-    // 3. Redirect to home
-    navigate("/home");
-  };
+  if (insertError) {
+    console.log(insertError);
+    alert("Error saving user profile");
+    return;
+  }
+
+  alert("Signup successful!");
+  navigate("/home");
+};
 
   return (
     <div className="auth-container">
