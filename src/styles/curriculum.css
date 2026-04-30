@@ -1,0 +1,239 @@
+.curriculum-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px;
+  background: #F8FAFC;
+}
+
+.curriculum-container h2 {
+  margin-bottom: 35px;
+  color: #1E40AF;
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.curriculum-section {
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #1F2937;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section-header span {
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.course-card,
+.schedule-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.course-card {
+  padding: 22px;
+}
+
+.course-card:hover,
+.schedule-card:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  transform: translateY(-2px);
+}
+
+.course-card h4,
+.schedule-card h4 {
+  margin: 0 0 10px;
+  color: #2563EB;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.course-card p,
+.schedule-card p {
+  margin: 0;
+  color: #6B7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.course-meta span {
+  padding: 6px 10px;
+  background: #EFF6FF;
+  border-radius: 6px;
+  color: #1E40AF;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.registration-form {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.registration-form select {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  color: #1F2937;
+  font-size: 14px;
+}
+
+.registration-form select:focus {
+  border-color: #2563EB;
+  outline: none;
+}
+
+.registration-form button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #2563EB;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.registration-form button:hover:not(:disabled) {
+  background: #1E40AF;
+}
+
+.registration-form button:disabled {
+  background: #6B7280;
+  cursor: not-allowed;
+}
+
+.schedule-list {
+  display: grid;
+  gap: 14px;
+}
+
+.schedule-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+}
+
+.schedule-time {
+  display: grid;
+  gap: 4px;
+  min-width: 130px;
+  text-align: right;
+}
+
+.schedule-time span {
+  color: #1E40AF;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.schedule-time strong {
+  color: #1F2937;
+  font-size: 14px;
+}
+
+.schedule-time small {
+  color: #6B7280;
+  font-size: 12px;
+}
+
+.loading,
+.no-data {
+  padding: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  color: #6B7280;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .curriculum-container {
+    padding: 24px 16px;
+  }
+
+  .section-header,
+  .registration-form,
+  .schedule-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-time {
+    min-width: 0;
+    text-align: left;
+  }
+}
+
+.register-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #2563EB;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register-btn:hover:not(:disabled) {
+  background: #1E40AF;
+}
+
+.register-btn:disabled {
+  background: #6B7280;
+  cursor: not-allowed;
+}
