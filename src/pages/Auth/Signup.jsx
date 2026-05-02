@@ -6,47 +6,82 @@ import "../../styles/auth.css";
 function Signup() {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
+
+  const [childEmail, setChildEmail] = useState("");
 
   const handleSignup = async () => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+    if (!name || !email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+    let childId = null;
 
-  
-  const { data: sessionData } = await supabase.auth.getSession();
-  const user = sessionData?.session?.user;
+    if (role === "parent") {
+      if (!childEmail) {
+        alert("Please enter child email");
+        return;
+      }
 
-  if (!user) {
-    alert("Signup succeeded but no user session found");
-    return;
-  }
+      const { data: childData, error: childError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", childEmail)
+        .single();
 
-  const { error: insertError } = await supabase.from("users").insert([
-    {
-      auth_id: user.id,
-      name: email,
-      email: email,
-      role: "student",
-    },
-  ]);
+      if (childError || !childData) {
+        alert("Child not found");
+        return;
+      }
 
-  if (insertError) {
-    console.log(insertError);
-    alert("Error saving user profile");
-    return;
-  }
+      childId = childData.id;
+    }
 
-  alert("Signup successful!");
-  navigate("/home");
-};
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Signup succeeded but no user session found");
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("users").insert([
+      {
+        auth_id: user.id,
+        name: name,
+        email: email,
+        role: role,
+        child_id: childId,
+      },
+    ]);
+
+    if (insertError) {
+      console.log(insertError);
+      alert("Error saving user profile");
+      return;
+    }
+
+    if (role === "parent") {
+      navigate("/community");
+    } else {
+      navigate("/home");
+    }
+  };
 
   return (
     <div className="auth-container">
@@ -56,6 +91,15 @@ function Signup() {
         <p className="auth-subtitle">
           Join the University Management System
         </p>
+
+        <div className="auth-input-group">
+          <label>Name</label>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
 
         <div className="auth-input-group">
           <label>Email</label>
@@ -74,6 +118,25 @@ function Signup() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        <div className="auth-input-group">
+          <label>Role</label>
+          <select onChange={(e) => setRole(e.target.value)}>
+            <option value="student">Student</option>
+            <option value="parent">Parent</option>
+          </select>
+        </div>
+
+        {role === "parent" && (
+          <div className="auth-input-group">
+            <label>Child Email</label>
+            <input
+              type="email"
+              placeholder="Enter your child's email"
+              onChange={(e) => setChildEmail(e.target.value)}
+            />
+          </div>
+        )}
 
         <button onClick={handleSignup}>Sign Up</button>
 

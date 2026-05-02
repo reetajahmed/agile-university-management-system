@@ -17,10 +17,27 @@ function Login() {
 
     if (error) {
       alert(error.message);
-    } else {
-      alert("Login successful!");
+      return;
+    }
 
-      //REDIRECT TO HOME
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("auth_id", user.id)
+      .single();
+
+    if (userError || !userData) {
+      alert("Error loading user data");
+      return;
+    }
+
+    if (userData.role === "parent") {
+      navigate("/community");
+    } else {
       navigate("/home");
     }
   };

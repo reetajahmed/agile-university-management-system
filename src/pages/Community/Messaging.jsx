@@ -9,9 +9,8 @@ function Messaging() {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedReceiver, setSelectedReceiver] = useState("");
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
-  // Get logged-in user
   const fetchCurrentUser = async () => {
     const {
       data: { user },
@@ -28,17 +27,16 @@ function Messaging() {
     }
   };
 
-  //Get all users
   const fetchUsers = async () => {
     const { data } = await supabase.from("users").select("*");
     setUsers(data);
   };
 
-  // 🔹 Get messages (ONLY related to current user)
   const fetchMessages = async () => {
     if (!currentUser) return;
 
-    setLoading(true); 
+    setLoading(true);
+
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -47,16 +45,13 @@ function Messaging() {
       )
       .order("id", { ascending: true });
 
-    if (error) {
-      console.log(error);
-    } else {
+    if (!error) {
       setMessages(data);
     }
 
-    setLoading(false); 
+    setLoading(false);
   };
 
-  // Send message
   const sendMessage = async () => {
     if (!message || !currentUser || !selectedReceiver) return;
 
@@ -68,51 +63,58 @@ function Messaging() {
       },
     ]);
 
-    if (error) {
-      console.log(error);
-      alert("Error sending message");
-      return;
+    if (!error) {
+      setMessage("");
+      fetchMessages();
     }
-
-    setMessage("");
-    fetchMessages();
   };
 
-  // Load initial data
   useEffect(() => {
     fetchCurrentUser();
     fetchUsers();
   }, []);
 
-  // Load messages AFTER user is known
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (currentUser) {
       fetchMessages();
     }
   }, [currentUser]);
 
+  const filteredUsers = users.filter((u) => {
+    if (!currentUser || u.id === currentUser.id) return false;
+
+    if (currentUser.role === "student") {
+      return u.role === "doctor";
+    }
+
+    if (currentUser.role === "parent") {
+      return u.role === "doctor";
+    }
+
+    if (currentUser.role === "doctor") {
+      return true;
+    }
+
+    return false;
+  });
+
   return (
     <Layout>
       <div className="messaging-container">
         <h2>Messaging</h2>
 
-        {/* Receiver Dropdown */}
         <select
           value={selectedReceiver}
           onChange={(e) => setSelectedReceiver(e.target.value)}
         >
           <option value="">Select Receiver</option>
-          {users
-            .filter((u) => !currentUser || u.id !== currentUser.id)
-            .map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name}
-              </option>
-            ))}
+          {filteredUsers.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
         </select>
 
-        {/*MESSAGE DISPLAY */}
         <div className="messages-list">
           {loading ? (
             <p className="loading">Loading messages...</p>
@@ -140,7 +142,6 @@ function Messaging() {
           )}
         </div>
 
-        {/* Input */}
         <div className="input-section">
           <input
             type="text"

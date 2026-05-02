@@ -1,9 +1,45 @@
+import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
 import "../../styles/community.css";
 
 function Community() {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCurrentUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data } = await supabase
+        .from("users")
+        .select("*")
+        .eq("auth_id", user.id)
+        .single();
+
+      setCurrentUser(data);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  const isParent = currentUser?.role === "parent";
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="loading">Loading...</div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -13,16 +49,13 @@ function Community() {
 
         <div className="community-section">
 
-          {/* Section Header */}
           <div className="section-header">
             <h3>Communication Tools</h3>
-            <span>5 modules</span>
+            <span>{isParent ? "3 modules" : "5 modules"}</span>
           </div>
 
-          {/* Grid (like curriculum) */}
           <div className="community-grid">
 
-            {/* Messaging */}
             <div
               className="community-card"
               onClick={() => navigate("/messages")}
@@ -31,7 +64,6 @@ function Community() {
               <p>Send and receive messages</p>
             </div>
 
-            {/* Announcements */}
             <div
               className="community-card"
               onClick={() => navigate("/announcements")}
@@ -40,31 +72,36 @@ function Community() {
               <p>View latest updates</p>
             </div>
 
-            {/* Events */}
-            <div
-              className="community-card"
-              onClick={() => navigate("/events")}
-            >
-              <h3>Events</h3>
-              <p>View university events</p>
-            </div>
+            {!isParent && (
+              <>
+                <div
+                  className="community-card"
+                  onClick={() => navigate("/events")}
+                >
+                  <h3>Events</h3>
+                  <p>View university events</p>
+                </div>
 
-            {/* Meetings */}
-            <div
-              className="community-card"
-              onClick={() => navigate("/meetings")}
-            >
-              <h3>Meetings</h3>
-              <p>Schedule meeting with professor</p>
-            </div>
+                <div
+                  className="community-card"
+                  onClick={() => navigate("/meetings")}
+                >
+                  <h3>Meetings</h3>
+                  <p>Schedule meeting with professor</p>
+                </div>
+              </>
+            )}
 
-            {/* Progress */}
             <div
               className="community-card"
               onClick={() => navigate("/progress")}
             >
               <h3>Progress</h3>
-              <p>View your academic performance</p>
+              <p>
+                {isParent
+                  ? "View your child's academic performance"
+                  : "View your academic performance"}
+              </p>
             </div>
 
           </div>

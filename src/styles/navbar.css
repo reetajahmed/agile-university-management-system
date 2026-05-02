@@ -1,66 +1,77 @@
 .navbar {
-  background-color: #2563EB;
+  background: linear-gradient(135deg, #2563EB, #1E40AF);
   padding: 12px 30px;
 
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* Left side links */
-.nav-links {
+/* LEFT SIDE */
+.nav-left {
   display: flex;
-  gap: 25px;
+  align-items: center;
+  gap: 18px;
 }
 
-/* Links */
+/* RIGHT SIDE */
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+/* LINKS */
 .navbar a {
-  color: white;
+  color: #E0E7FF;
   text-decoration: none;
   font-weight: 500;
-  font-size: 15px;
-  position: relative;
-  transition: 0.2s ease;
+  font-size: 14px;
+
+  padding: 8px 14px;
+  border-radius: 8px;
+
+  transition: all 0.25s ease;
 }
 
-/* Hover effect */
+/* HOVER */
 .navbar a:hover {
-  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
-/* Active link underline animation */
-.navbar a.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -4px;
-  width: 100%;
-  height: 2px;
+/* ACTIVE LINK */
+.navbar a.active {
   background: white;
-  border-radius: 2px;
+  color: #1E40AF;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Logout button */
+/* LOGOUT BUTTON */
 .logout-btn {
-  padding: 8px 16px;
+  padding: 8px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+
   background: #EF4444;
   color: white;
   font-weight: 600;
+  font-size: 14px;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
-/* Hover */
+/* HOVER */
 .logout-btn:hover {
   background: #DC2626;
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Click */
+/* CLICK */
 .logout-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
