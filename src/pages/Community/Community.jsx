@@ -11,55 +11,62 @@ function Community() {
 
         <h2>Communication Center</h2>
 
-        <div className="cards-row top-row">
+        <div className="community-section">
 
-          {/* Messaging */}
-          <div
-            className="community-card"
-            onClick={() => navigate("/messages")}
-          >
-            <h3>Messaging</h3>
-            <p>Send and receive messages</p>
+          {/* Section Header */}
+          <div className="section-header">
+            <h3>Communication Tools</h3>
+            <span>5 modules</span>
           </div>
 
-          {/* Announcements */}
-          <div
-            className="community-card"
-            onClick={() => navigate("/announcements")}
-          >
-            <h3>Announcements</h3>
-            <p>View latest updates</p>
-          </div>
+          {/* Grid (like curriculum) */}
+          <div className="community-grid">
 
-          {/* Events */}
-          <div
-            className="community-card"
-            onClick={() => navigate("/events")}
-          >
-            <h3>Events</h3>
-            <p>View university events</p>
-          </div>
+            {/* Messaging */}
+            <div
+              className="community-card"
+              onClick={() => navigate("/messages")}
+            >
+              <h3>Messaging</h3>
+              <p>Send and receive messages</p>
+            </div>
 
-        </div>
+            {/* Announcements */}
+            <div
+              className="community-card"
+              onClick={() => navigate("/announcements")}
+            >
+              <h3>Announcements</h3>
+              <p>View latest updates</p>
+            </div>
 
-        <div className="cards-row bottom-row">
+            {/* Events */}
+            <div
+              className="community-card"
+              onClick={() => navigate("/events")}
+            >
+              <h3>Events</h3>
+              <p>View university events</p>
+            </div>
 
-          {/* Meetings */}
-          <div
-            className="community-card"
-            onClick={() => navigate("/meetings")}
-          >
-            <h3>Meetings</h3>
-            <p>Schedule meeting with professor</p>
-          </div>
+            {/* Meetings */}
+            <div
+              className="community-card"
+              onClick={() => navigate("/meetings")}
+            >
+              <h3>Meetings</h3>
+              <p>Schedule meeting with professor</p>
+            </div>
 
-          {/* Progress */}
-          <div
-            className="community-card"
-            onClick={() => navigate("/progress")}
-          >
-            <h3>Progress</h3>
-            <p>View your academic performance</p>
+            {/* Progress */}
+            <div
+              className="community-card"
+              onClick={() => navigate("/progress")}
+            >
+              <h3>Progress</h3>
+              <p>View your academic performance</p>
+            </div>
+
           </div>
 
         </div>

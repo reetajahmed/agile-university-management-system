@@ -20,7 +20,7 @@ function Signup() {
     return;
   }
 
-  // 🔥 FIX: ALWAYS get user from session
+  
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData?.session?.user;
 

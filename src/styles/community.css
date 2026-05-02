@@ -1,85 +1,102 @@
-/* Container */
 .community-container {
-  padding: 40px;
   max-width: 1200px;
   margin: auto;
+  padding: 40px;
+  background: #F8FAFC;
 }
 
-/* Title */
+/* Main Title */
 .community-container h2 {
-  margin-bottom: 40px;
+  margin-bottom: 35px;
+  color: #1E40AF;
   font-size: 30px;
   font-weight: 600;
-  color: #1E3A8A; /* nicer blue instead of black */
   text-align: center;
 }
 
-/* Rows */
-.cards-row {
+/* Section */
+.community-section {
+  margin-bottom: 30px;
+}
+
+/* Section Header (like curriculum) */
+.section-header {
   display: flex;
-  gap: 25px;
-  margin-bottom: 25px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
 }
 
-/* Top row: 3 equal cards */
-.top-row .community-card {
-  flex: 1;
+.section-header h3 {
+  margin: 0;
+  color: #1F2937;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-/* Bottom row: centered 2 cards */
-.bottom-row {
-  justify-content: center;
+.section-header span {
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.bottom-row .community-card {
-  width: 300px;
+/* Grid like courses */
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
 }
 
-/* Card */
+/* Card (same style as course-card) */
 .community-card {
-  background: linear-gradient(135deg, #ffffff, #f9fafb);
-  padding: 30px 20px;
-  border-radius: 16px;
-  text-align: center;
-  cursor: pointer;
+  background: #FFFFFF;
   border: 1px solid #E5E7EB;
-
-  /* Shadow */
+  border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  padding: 22px;
+  cursor: pointer;
 
-  /* Animation */
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.2s ease;
 }
 
-/* Hover */
+/* Hover EXACTLY like curriculum */
 .community-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  background: #EFF6FF;
+  border-color: #2563EB;
+  transform: translateY(-2px);
 }
 
 /* Title */
 .community-card h3 {
-  color: #2D6CDF;
-  margin-bottom: 10px;
+  margin: 0 0 10px;
+  color: #2563EB;
   font-size: 18px;
   font-weight: 600;
 }
 
 /* Description */
 .community-card p {
-  color: #4B5563;
+  margin: 0;
+  color: #6B7280;
   font-size: 14px;
   line-height: 1.5;
 }
 
-
 /* Responsive */
-@media (max-width: 768px) {
-  .cards-row {
-    flex-direction: column;
+@media (max-width: 900px) {
+  .community-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .community-container {
+    padding: 24px 16px;
   }
 
-  .bottom-row .community-card {
-    width: 100%;
+  .community-grid {
+    grid-template-columns: 1fr;
   }
 }

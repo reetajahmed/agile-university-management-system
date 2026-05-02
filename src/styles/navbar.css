@@ -1,21 +1,66 @@
 .navbar {
   background-color: #2563EB;
-  padding: 12px 20px;
+  padding: 12px 30px;
+
   display: flex;
-  gap: 20px;
+  justify-content: space-between;
   align-items: center;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Left side links */
+.nav-links {
+  display: flex;
+  gap: 25px;
+}
+
+/* Links */
 .navbar a {
   color: white;
   text-decoration: none;
   font-weight: 500;
+  font-size: 15px;
+  position: relative;
+  transition: 0.2s ease;
 }
 
+/* Hover effect */
 .navbar a:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-.navbar a.active {
-  border-bottom: 2px solid white;
+/* Active link underline animation */
+.navbar a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+}
+
+/* Logout button */
+.logout-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #EF4444;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.logout-btn:hover {
+  background: #DC2626;
+  transform: translateY(-1px);
+}
+
+/* Click */
+.logout-btn:active {
+  transform: scale(0.97);
 }
