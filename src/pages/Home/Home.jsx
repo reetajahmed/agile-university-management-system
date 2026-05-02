@@ -77,11 +77,14 @@ function Home() {
                   <p>Courses & Academic Content</p>
                 </div>
 
-                <div className="card" onClick={() => navigate("/staff")}>
-                  <div className="card-icon">👔</div>
-                  <h3>Staff</h3>
-                  <p>Manage Professors & Employees</p>
-                </div>
+          {/* Staff */}
+          <div 
+            className="card" 
+            onClick={() => navigate("/staff")}
+          >
+            <h3>Staff</h3>
+            <p>Manage Professors & Employees</p>
+          </div>
 
                 <div className="card" onClick={() => navigate("/facilities")}>
                   <div className="card-icon">🏛️</div>

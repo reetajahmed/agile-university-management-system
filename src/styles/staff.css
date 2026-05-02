@@ -1,0 +1,529 @@
+/* staff.css - Color Palette: Primary Blue #2563EB, Dark Blue #1E40AF, Background #F8FAFC */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Container */
+.staff-container {
+  padding: 32px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #F8FAFC;
+  min-height: 100vh;
+}
+
+/* Header */
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.staff-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+}
+
+.staff-add-button {
+  background-color: #2563EB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.staff-add-button:hover {
+  background-color: #1E40AF;
+}
+
+.staff-loading-state {
+  text-align: center;
+  padding: 48px;
+  color: #6B7280;
+}
+
+/* Staff Table Styles */
+.staff-table-wrapper {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+}
+
+.staff-search-bar {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+}
+
+.staff-search-icon {
+  font-size: 18px;
+  color: #9CA3AF;
+}
+
+.staff-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #F9FAFB;
+  transition: all 0.2s;
+}
+
+.staff-search-input:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.staff-search-clear {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #9CA3AF;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-table th {
+  text-align: left;
+  padding: 14px 20px;
+  background-color: #F9FAFB;
+  font-weight: 600;
+  color: #1F2937;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 14px;
+}
+
+.staff-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  color: #1F2937;
+  font-size: 14px;
+}
+
+.staff-table-row {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.staff-table-row:hover {
+  background-color: #EFF6FF;
+}
+
+.staff-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.staff-avatar-small {
+  width: 36px;
+  height: 36px;
+  background: #2563EB;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.staff-name {
+  font-weight: 500;
+}
+
+.staff-email, .staff-id {
+  color: #6B7280;
+}
+
+.staff-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-view {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.btn-view:hover {
+  background: #DBEAFE;
+}
+
+.btn-edit {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.btn-edit:hover {
+  background: #E5E7EB;
+}
+
+.btn-assign {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+.btn-assign:hover {
+  background: #D1FAE5;
+}
+
+.staff-table-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #E5E7EB;
+  font-size: 13px;
+  color: #6B7280;
+  background: white;
+}
+
+/* Card modal overlay */
+.staff-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.staff-card-modal, .staff-form-modal {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.staff-card-header, .staff-form-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-card-header h2, .staff-form-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1F2937;
+}
+
+.staff-avatar-large {
+  width: 56px;
+  height: 56px;
+  background: #2563EB;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.staff-card-title {
+  flex: 1;
+  margin-left: 16px;
+}
+
+.staff-role-badge {
+  background: #EFF6FF;
+  color: #2563EB;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.staff-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #9CA3AF;
+}
+
+.staff-card-body {
+  padding: 24px;
+}
+
+.staff-detail-row {
+  display: flex;
+  padding: 12px 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.staff-detail-label {
+  width: 80px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.staff-detail-value {
+  flex: 1;
+  color: #1F2937;
+}
+
+.staff-not-provided {
+  color: #9CA3AF;
+}
+
+.staff-capitalize {
+  text-transform: capitalize;
+}
+
+.staff-card-actions, .staff-form-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #2563EB;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #1E40AF;
+}
+
+.btn-secondary {
+  background: #F3F4F6;
+  color: #1F2937;
+  border: 1px solid #E5E7EB;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #E5E7EB;
+}
+
+/* Form styles */
+.staff-form-body {
+  padding: 24px;
+}
+
+.staff-form-group {
+  margin-bottom: 20px;
+}
+
+.staff-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #1F2937;
+  font-size: 14px;
+}
+
+.staff-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+  font-size: 14px;
+}
+
+.staff-input:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Alerts */
+.staff-alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.staff-alert-error {
+  background: #FEF2F2;
+  color: #EF4444;
+  border: 1px solid #FEE2E2;
+}
+
+.staff-alert-success {
+  background: #ECFDF5;
+  color: #10B981;
+  border: 1px solid #D1FAE5;
+}
+
+/* Empty state */
+.staff-empty {
+  text-align: center;
+  padding: 48px;
+  color: #6B7280;
+}
+
+.staff-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.staff-modal-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+/* Assign course */
+.staff-assign-body {
+  padding: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.staff-course-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.staff-course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.staff-course-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.staff-course-name {
+  font-weight: 500;
+  color: #1F2937;
+}
+
+.staff-course-desc {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.btn-toggle {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-toggle-add {
+  background: #2563EB;
+  color: white;
+}
+
+.btn-toggle-add:hover {
+  background: #1E40AF;
+}
+
+.btn-toggle-remove {
+  background: #F3F4F6;
+  color: #1F2937;
+  border: 1px solid #E5E7EB;
+}
+
+.staff-loading {
+  text-align: center;
+  padding: 24px;
+  color: #6B7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .staff-table,
+  .staff-table thead,
+  .staff-table tbody,
+  .staff-table th,
+  .staff-table td,
+  .staff-table tr {
+    display: block;
+  }
+
+  .staff-table thead tr {
+    display: none;
+  }
+
+  .staff-table tr {
+    margin-bottom: 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+  }
+
+  .staff-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #F3F4F6;
+  }
+
+  .staff-table td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    width: 100px;
+    color: #6B7280;
+  }
+
+  .staff-name-cell {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
