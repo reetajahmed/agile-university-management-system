@@ -10,7 +10,7 @@ function Curriculum() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 🔹 Fetch everything
+  // 🔹 Fetch all data
   const fetchCurriculum = async () => {
     setLoading(true);
 
@@ -51,10 +51,12 @@ function Curriculum() {
   const fetchRegistrations = async (studentId) => {
     const { data, error } = await supabase
       .from("enrollments")
-      .select(`
+      .select(
+        `
         *,
         course:courses(*)
-      `)
+      `
+      )
       .eq("student_id", studentId);
 
     if (error) {
@@ -88,6 +90,27 @@ function Curriculum() {
     setSaving(false);
   };
 
+  // 🔹 DROP COURSE (NEW)
+  const dropCourse = async (courseId) => {
+    if (!currentUser) return;
+
+    const confirmDrop = window.confirm("Are you sure you want to drop this course?");
+    if (!confirmDrop) return;
+
+    const { error } = await supabase
+      .from("enrollments")
+      .delete()
+      .eq("student_id", currentUser.id)
+      .eq("course_id", courseId);
+
+    if (error) {
+      console.log(error);
+      alert("Error dropping course");
+    } else {
+      await fetchRegistrations(currentUser.id);
+    }
+  };
+
   // 🔹 Check registration
   const isRegistered = (courseId) =>
     registrations.some((item) => item.course_id === courseId);
@@ -113,7 +136,7 @@ function Curriculum() {
           <p className="loading">Loading curriculum...</p>
         ) : (
           <>
-            {/* ================= COURSES ================= */}
+            {/* ================= AVAILABLE COURSES ================= */}
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Available Courses</h3>
@@ -183,6 +206,14 @@ function Curriculum() {
                             {course?.Instructor || "Instructor not assigned"}
                           </p>
                         </div>
+
+                        {/* 🔥 DROP BUTTON */}
+                        <button
+                          onClick={() => dropCourse(course.id)}
+                          className="drop-btn"
+                        >
+                          Drop
+                        </button>
                       </div>
                     );
                   })}
