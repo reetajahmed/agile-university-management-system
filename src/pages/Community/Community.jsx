@@ -92,17 +92,16 @@ function Community() {
               </>
             )}
 
-            <div
-              className="community-card"
-              onClick={() => navigate("/progress")}
-            >
-              <h3>Progress</h3>
-              <p>
-                {isParent
-                  ? "View your child's academic performance"
-                  : "View your academic performance"}
-              </p>
-            </div>
+            {currentUser?.role !== "doctor" && (
+              <div className="community-card" onClick={() => navigate("/progress")}>
+                <h3>Progress</h3>
+                <p>
+                  {isParent
+                    ? "View your child's academic performance"
+                    : "View your academic performance"}
+                </p>
+              </div>
+            )}
 
           </div>
 

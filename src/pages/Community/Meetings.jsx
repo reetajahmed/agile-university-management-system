@@ -9,9 +9,8 @@ function Meetings() {
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [date, setDate] = useState("");
   const [meetings, setMeetings] = useState([]);
-  const [loading, setLoading] = useState(true); // 🔥 NEW
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch logged-in user
   const fetchCurrentUser = async () => {
     const {
       data: { user },
@@ -25,36 +24,51 @@ function Meetings() {
         .single();
 
       setCurrentUser(data);
+      return data;
     }
   };
 
-  // 🔹 Fetch users (doctors only)
   const fetchUsers = async () => {
     const { data } = await supabase
       .from("users")
       .select("*")
       .eq("role", "doctor");
 
-    setUsers(data);
+    setUsers(data || []);
   };
 
-  // 🔹 Fetch meetings
-  const fetchMeetings = async () => {
-    setLoading(true); // 🔥 START loading
+  const fetchMeetings = async (user) => {
+    if (!user) return;
 
-    const { data } = await supabase
-      .from("meetings")
-      .select("*")
-      .order("date", { ascending: true });
+    setLoading(true);
+
+    let query = supabase.from("meetings").select("*");
+
+    if (user.role === "student") {
+      query = query.eq("student_id", user.id);
+    }
+
+    if (user.role === "doctor") {
+      query = query.eq("doctor_id", user.id);
+    }
+
+    if (user.role === "parent") {
+      query = query.eq("student_id", user.child_id);
+    }
+
+    const { data } = await query.order("date", { ascending: true });
 
     setMeetings(data || []);
-
-    setLoading(false); // 🔥 END loading
+    setLoading(false);
   };
 
-  // 🔹 Create meeting
   const createMeeting = async () => {
     if (!selectedDoctor || !date || !currentUser) return;
+
+    if (currentUser.role !== "student") {
+      alert("Only students can schedule meetings");
+      return;
+    }
 
     await supabase.from("meetings").insert([
       {
@@ -66,46 +80,48 @@ function Meetings() {
 
     setSelectedDoctor("");
     setDate("");
-    fetchMeetings();
+    fetchMeetings(currentUser);
   };
 
   useEffect(() => {
-    fetchCurrentUser();
-    fetchUsers();
-    fetchMeetings();
+    const init = async () => {
+      const user = await fetchCurrentUser();
+      await fetchUsers();
+      await fetchMeetings(user);
+    };
+
+    init();
   }, []);
 
   return (
     <Layout>
       <div className="meetings-container">
-        <h2>Schedule Meeting</h2>
+        <h2>Meetings</h2>
 
-        {/* Form */}
-        <div className="meeting-form">
-          <select
-            value={selectedDoctor}
-            onChange={(e) => setSelectedDoctor(e.target.value)}
-          >
-            <option value="">Select Doctor</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name}
-              </option>
-            ))}
-          </select>
+        {currentUser?.role === "student" && (
+          <div className="meeting-form">
+            <select
+              value={selectedDoctor}
+              onChange={(e) => setSelectedDoctor(e.target.value)}
+            >
+              <option value="">Select Doctor</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
 
-          <input
-            type="datetime-local"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+            <input
+              type="datetime-local"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
 
-          <button onClick={createMeeting}>
-            Schedule
-          </button>
-        </div>
+            <button onClick={createMeeting}>Schedule</button>
+          </div>
+        )}
 
-        {/* 🔥 FIXED DISPLAY */}
         <div className="meetings-list">
           {loading ? (
             <p className="loading">Loading meetings...</p>
