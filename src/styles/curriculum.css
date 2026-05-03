@@ -367,3 +367,56 @@
   color: #6B7280;
   font-size: 14px;
 }
+
+/* ===== DAY GROUP ===== */
+.schedule-day {
+  margin-bottom: 25px;
+}
+
+.schedule-day-title {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+/* ===== MODERN CARD ===== */
+.schedule-card-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  transition: 0.2s;
+}
+
+.schedule-card-modern:hover {
+  border-color: #2563EB;
+  background: #EFF6FF;
+}
+
+/* LEFT SIDE */
+.schedule-left h5 {
+  margin: 0;
+  font-size: 15px;
+  color: #1F2937;
+}
+
+.schedule-room {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* RIGHT SIDE */
+.schedule-right {
+  text-align: right;
+}
+
+.schedule-time-modern {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563EB;
+}

@@ -114,7 +114,7 @@ function Curriculum() {
     };
   }, []);
 
-  // 🔥 FILTER LOGIC (SEARCH)
+  //SEARCH FILTER
   const filteredCourses = courses.filter((course) => {
     const term = searchTerm.toLowerCase();
 
@@ -124,6 +124,17 @@ function Curriculum() {
       course.Instructor?.toLowerCase().includes(term)
     );
   });
+
+  //GROUP SCHEDULE BY DAY
+  const groupedSchedule = registrations.reduce((acc, item) => {
+    const course = item.course;
+    const day = course?.Day || "Other";
+
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(course);
+
+    return acc;
+  }, {});
 
   return (
     <Layout>
@@ -141,11 +152,11 @@ function Curriculum() {
                 <span>{filteredCourses.length} courses</span>
               </div>
 
-              {/* 🔍 SEARCH INPUT */}
+              {/* 🔍 SEARCH */}
               <div className="search-container">
                 <input
                   type="text"
-                  placeholder="🔍 Search by name, instructor, or description..."
+                  placeholder="🔍 Search courses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-bar"
@@ -219,27 +230,36 @@ function Curriculum() {
               </div>
             </section>
 
-            {/* ================= SCHEDULE ================= */}
+            {/* ================= MODERN SCHEDULE ================= */}
             <section className="curriculum-section">
               <h3>Class Schedule</h3>
 
-              <div className="schedule-list">
-                {registrations.map((item) => {
-                  const course = item.course;
+              {Object.keys(groupedSchedule).length === 0 ? (
+                <p className="no-results">No schedule available</p>
+              ) : (
+                Object.keys(groupedSchedule).map((day) => (
+                  <div key={day} className="schedule-day">
+                    <h4 className="schedule-day-title">{day}</h4>
 
-                  return (
-                    <div key={item.id} className="schedule-card">
-                      <h4>{course?.name}</h4>
+                    {groupedSchedule[day].map((course) => (
+                      <div key={course.id} className="schedule-card-modern">
+                        <div className="schedule-left">
+                          <h5>{course.name}</h5>
+                          <span className="schedule-room">
+                            {course.Room}
+                          </span>
+                        </div>
 
-                      <div className="schedule-time">
-                        <span>{course?.Day}</span>
-                        <strong>{course?.Time}</strong>
-                        <small>{course?.Room}</small>
+                        <div className="schedule-right">
+                          <span className="schedule-time-modern">
+                            {course.Time}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    ))}
+                  </div>
+                ))
+              )}
             </section>
           </>
         )}
