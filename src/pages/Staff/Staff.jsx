@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../services/supabaseClient";
 import "../../styles/staff.css";
+import Layout from "../../components/Layout";
 // =============================================================================
 // SERVICES
 // =============================================================================
@@ -1125,6 +1126,7 @@ export default function Staff() {
   };
 
   return (
+    <Layout>
     <div className="staff-container">
       <div className="staff-header">
         <h1 className="staff-title">Staff Management</h1>
@@ -1176,5 +1178,6 @@ export default function Staff() {
         <PayrollLeaveModal professor={selectedProfessor} currentUser={currentUser} isAdmin={isAdmin} isDoctor={isDoctor} onClose={handleModalClose} />
       )}
     </div>
+    </Layout>
   );
 }
