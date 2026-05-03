@@ -10,6 +10,9 @@ function Curriculum() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // 🔍 SEARCH
+  const [searchTerm, setSearchTerm] = useState("");
+
   // 🔥 POPUP + MATERIALS
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
@@ -47,7 +50,6 @@ function Curriculum() {
     setLoading(false);
   };
 
-  // 🔹 Fetch registrations
   const fetchRegistrations = async (studentId) => {
     const { data } = await supabase
       .from("enrollments")
@@ -57,7 +59,6 @@ function Curriculum() {
     setRegistrations(data || []);
   };
 
-  // 🔹 Register
   const registerCourse = async (courseId) => {
     if (!courseId || !currentUser || saving) return;
 
@@ -74,7 +75,6 @@ function Curriculum() {
     setSaving(false);
   };
 
-  // 🔹 Drop course
   const dropCourse = async (courseId) => {
     if (!currentUser) return;
 
@@ -89,13 +89,12 @@ function Curriculum() {
     await fetchRegistrations(currentUser.id);
   };
 
-  // 🔥 Fetch materials (IMPORTANT)
   const fetchMaterials = async (course) => {
     const { data } = await supabase
       .from("course_materials")
       .select("*")
       .eq("course_id", course.id);
-    
+
     setMaterials(data || []);
     setSelectedCourse(course);
   };
@@ -115,6 +114,17 @@ function Curriculum() {
     };
   }, []);
 
+  // 🔥 FILTER LOGIC (SEARCH)
+  const filteredCourses = courses.filter((course) => {
+    const term = searchTerm.toLowerCase();
+
+    return (
+      course.name?.toLowerCase().includes(term) ||
+      course.description?.toLowerCase().includes(term) ||
+      course.Instructor?.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <Layout>
       <div className="curriculum-container">
@@ -128,44 +138,57 @@ function Curriculum() {
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Available Courses</h3>
-                <span>{courses.length} courses</span>
+                <span>{filteredCourses.length} courses</span>
+              </div>
+
+              {/* 🔍 SEARCH INPUT */}
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="🔍 Search by name, instructor, or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-bar"
+                />
               </div>
 
               <div className="course-grid">
-                {courses.map((course) => (
-                  <div key={course.id} className="course-card">
-                    <h4>{course.name}</h4>
-                    <p>{course.description}</p>
+                {filteredCourses.length === 0 ? (
+                  <p className="no-results">No courses match your search</p>
+                ) : (
+                  filteredCourses.map((course) => (
+                    <div key={course.id} className="course-card">
+                      <h4>{course.name}</h4>
+                      <p>{course.description}</p>
 
-                    <div className="course-meta">
-                      <span>{course["Course Code"]}</span>
-                      <span>{course.Hours} hrs</span>
-                    </div>
+                      <div className="course-meta">
+                        <span>{course["Course Code"]}</span>
+                        <span>{course.Hours} hrs</span>
+                      </div>
 
-                    {/* 🔥 VIEW MATERIALS */}
-                    <button
-                      onClick={() => fetchMaterials(course)}
-                      className="view-btn"
-                    >
-                      View Materials
-                    </button>
-
-                    {/* REGISTER */}
-                    {currentUser && (
                       <button
-                        onClick={() => registerCourse(course.id)}
-                        disabled={isRegistered(course.id) || saving}
-                        className="register-btn"
+                        onClick={() => fetchMaterials(course)}
+                        className="view-btn"
                       >
-                        {isRegistered(course.id)
-                          ? "Registered"
-                          : saving
-                          ? "Registering..."
-                          : "Register"}
+                        View Materials
                       </button>
-                    )}
-                  </div>
-                ))}
+
+                      {currentUser && (
+                        <button
+                          onClick={() => registerCourse(course.id)}
+                          disabled={isRegistered(course.id) || saving}
+                          className="register-btn"
+                        >
+                          {isRegistered(course.id)
+                            ? "Registered"
+                            : saving
+                            ? "Registering..."
+                            : "Register"}
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </section>
 
@@ -243,17 +266,17 @@ function Curriculum() {
               ) : (
                 materials.map((item) => (
                   <div key={item.id} className="material-item">
-                  <span className="material-title">{item.title}</span>
+                    <span className="material-title">{item.title}</span>
 
-                  <a
-                    href={item.file_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="material-btn"
-                  >
-                    Open
-                  </a>
-                </div>
+                    <a
+                      href={item.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="material-btn"
+                    >
+                      Open
+                    </a>
+                  </div>
                 ))
               )}
 
