@@ -10,11 +10,10 @@ function Curriculum() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-
+  // 🔹 Fetch everything
   const fetchCurriculum = async () => {
     setLoading(true);
 
-    
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData?.session?.user;
 
@@ -25,9 +24,7 @@ function Curriculum() {
         .eq("auth_id", user.id)
         .single();
 
-      if (error) {
-        console.log(error);
-      }
+      if (error) console.log(error);
 
       setCurrentUser(userData);
 
@@ -44,24 +41,20 @@ function Curriculum() {
       .select("*")
       .order("name", { ascending: true });
 
-    if (error) {
-      console.log(error);
-    } else {
-      setCourses(coursesData || []);
-    }
+    if (error) console.log(error);
+    else setCourses(coursesData || []);
 
     setLoading(false);
   };
 
+  // 🔹 Fetch registrations
   const fetchRegistrations = async (studentId) => {
     const { data, error } = await supabase
       .from("enrollments")
-      .select(
-        `
+      .select(`
         *,
         course:courses(*)
-      `
-      )
+      `)
       .eq("student_id", studentId);
 
     if (error) {
@@ -72,7 +65,7 @@ function Curriculum() {
     setRegistrations(data || []);
   };
 
-  
+  // 🔹 Register course
   const registerCourse = async (courseId) => {
     if (!courseId || !currentUser || saving) return;
 
@@ -95,14 +88,13 @@ function Curriculum() {
     setSaving(false);
   };
 
-  
+  // 🔹 Check registration
   const isRegistered = (courseId) =>
     registrations.some((item) => item.course_id === courseId);
 
   useEffect(() => {
     fetchCurriculum();
 
-    
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
       fetchCurriculum();
     });
@@ -121,7 +113,7 @@ function Curriculum() {
           <p className="loading">Loading curriculum...</p>
         ) : (
           <>
-            {/* COURSES */}
+            {/* ================= COURSES ================= */}
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Available Courses</h3>
@@ -144,7 +136,6 @@ function Curriculum() {
                         )}
                       </div>
 
-                      {/* Register button */}
                       {currentUser && (
                         <button
                           onClick={() => registerCourse(course.id)}
@@ -170,7 +161,36 @@ function Curriculum() {
               )}
             </section>
 
-            {/* SCHEDULE */}
+            {/* ================= REGISTERED COURSES ================= */}
+            <section className="curriculum-section">
+              <div className="section-header">
+                <h3>My Registered Courses</h3>
+                <span>{registrations.length} courses</span>
+              </div>
+
+              {registrations.length === 0 ? (
+                <p className="no-data">No registered courses yet</p>
+              ) : (
+                <div className="schedule-list">
+                  {registrations.map((item) => {
+                    const course = item.course;
+
+                    return (
+                      <div key={item.id} className="schedule-card">
+                        <div>
+                          <h4>{course?.name}</h4>
+                          <p>
+                            {course?.Instructor || "Instructor not assigned"}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* ================= CLASS SCHEDULE ================= */}
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Class Schedule</h3>
@@ -188,16 +208,12 @@ function Curriculum() {
                       <div key={item.id} className="schedule-card">
                         <div>
                           <h4>{course?.name}</h4>
-                          <p>
-                            {course?.Instructor ||
-                              "Instructor not assigned"}
-                          </p>
                         </div>
 
                         <div className="schedule-time">
                           <span>{course?.Day || "TBA"}</span>
                           <strong>{course?.Time || "Time TBA"}</strong>
-                          {course?.room && <small>{course.Room}</small>}
+                          {course?.Room && <small>{course.Room}</small>}
                         </div>
                       </div>
                     );
