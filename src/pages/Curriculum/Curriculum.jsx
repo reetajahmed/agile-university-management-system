@@ -10,10 +10,11 @@ function Curriculum() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 🔥 NEW STATE (for popup)
+  // 🔥 POPUP + MATERIALS
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [materials, setMaterials] = useState([]);
 
-  // 🔹 Fetch all data
+  // 🔹 Fetch everything
   const fetchCurriculum = async () => {
     setLoading(true);
 
@@ -46,6 +47,7 @@ function Curriculum() {
     setLoading(false);
   };
 
+  // 🔹 Fetch registrations
   const fetchRegistrations = async (studentId) => {
     const { data } = await supabase
       .from("enrollments")
@@ -55,6 +57,7 @@ function Curriculum() {
     setRegistrations(data || []);
   };
 
+  // 🔹 Register
   const registerCourse = async (courseId) => {
     if (!courseId || !currentUser || saving) return;
 
@@ -71,6 +74,7 @@ function Curriculum() {
     setSaving(false);
   };
 
+  // 🔹 Drop course
   const dropCourse = async (courseId) => {
     if (!currentUser) return;
 
@@ -83,6 +87,17 @@ function Curriculum() {
       .eq("course_id", courseId);
 
     await fetchRegistrations(currentUser.id);
+  };
+
+  // 🔥 Fetch materials (IMPORTANT)
+  const fetchMaterials = async (course) => {
+    const { data } = await supabase
+      .from("course_materials")
+      .select("*")
+      .eq("course_id", course.id);
+    
+    setMaterials(data || []);
+    setSelectedCourse(course);
   };
 
   const isRegistered = (courseId) =>
@@ -109,7 +124,7 @@ function Curriculum() {
           <p className="loading">Loading curriculum...</p>
         ) : (
           <>
-            {/* COURSES */}
+            {/* ================= COURSES ================= */}
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Available Courses</h3>
@@ -118,11 +133,7 @@ function Curriculum() {
 
               <div className="course-grid">
                 {courses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="course-card"
-                    onClick={() => setSelectedCourse(course)} // 🔥 OPEN POPUP
-                  >
+                  <div key={course.id} className="course-card">
                     <h4>{course.name}</h4>
                     <p>{course.description}</p>
 
@@ -131,17 +142,25 @@ function Curriculum() {
                       <span>{course.Hours} hrs</span>
                     </div>
 
+                    {/* 🔥 VIEW MATERIALS */}
+                    <button
+                      onClick={() => fetchMaterials(course)}
+                      className="view-btn"
+                    >
+                      View Materials
+                    </button>
+
+                    {/* REGISTER */}
                     {currentUser && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // ❗ prevent popup when clicking button
-                          registerCourse(course.id);
-                        }}
+                        onClick={() => registerCourse(course.id)}
                         disabled={isRegistered(course.id) || saving}
                         className="register-btn"
                       >
                         {isRegistered(course.id)
                           ? "Registered"
+                          : saving
+                          ? "Registering..."
                           : "Register"}
                       </button>
                     )}
@@ -150,7 +169,7 @@ function Curriculum() {
               </div>
             </section>
 
-            {/* REGISTERED COURSES */}
+            {/* ================= REGISTERED ================= */}
             <section className="curriculum-section">
               <h3>My Registered Courses</h3>
 
@@ -177,7 +196,7 @@ function Curriculum() {
               </div>
             </section>
 
-            {/* SCHEDULE */}
+            {/* ================= SCHEDULE ================= */}
             <section className="curriculum-section">
               <h3>Class Schedule</h3>
 
@@ -202,7 +221,7 @@ function Curriculum() {
           </>
         )}
 
-        {/* 🔥 MODAL */}
+        {/* ================= MODAL ================= */}
         {selectedCourse && (
           <div className="modal-overlay" onClick={() => setSelectedCourse(null)}>
             <div
@@ -214,13 +233,29 @@ function Curriculum() {
               <p>{selectedCourse.description}</p>
 
               <p><strong>Instructor:</strong> {selectedCourse.Instructor}</p>
-              <p><strong>Course Code:</strong> {selectedCourse["Course Code"]}</p>
               <p><strong>Type:</strong> {selectedCourse.Type}</p>
               <p><strong>Hours:</strong> {selectedCourse.Hours}</p>
 
-              <p><strong>Schedule:</strong></p>
-              <p>{selectedCourse.Day} - {selectedCourse.Time}</p>
-              <p>{selectedCourse.Room}</p>
+              <h3 style={{ marginTop: "20px" }}>Materials</h3>
+
+              {materials.length === 0 ? (
+                <p>No materials available</p>
+              ) : (
+                materials.map((item) => (
+                  <div key={item.id} className="material-item">
+                  <span className="material-title">{item.title}</span>
+
+                  <a
+                    href={item.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="material-btn"
+                  >
+                    Open
+                  </a>
+                </div>
+                ))
+              )}
 
               <button
                 onClick={() => setSelectedCourse(null)}
