@@ -10,10 +10,10 @@ function Messaging() {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchEmail, setSearchEmail] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
+  const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorPopup, setErrorPopup] = useState("");
 
+  // GET CURRENT USER
   const fetchCurrentUser = async () => {
     const {
       data: { user },
@@ -31,6 +31,7 @@ function Messaging() {
     }
   };
 
+  //GET CONVERSATIONS
   const fetchConversations = async (user) => {
     if (!user) return;
 
@@ -54,6 +55,7 @@ function Messaging() {
     setConversations(usersData || []);
   };
 
+  //GET MESSAGES
   const fetchMessages = async () => {
     if (!currentUser || !selectedUser) return;
 
@@ -71,6 +73,7 @@ function Messaging() {
     setLoading(false);
   };
 
+  //SEND MESSAGE
   const sendMessage = async () => {
     if (!message || !currentUser || !selectedUser) return;
 
@@ -87,23 +90,27 @@ function Messaging() {
     fetchConversations(currentUser);
   };
 
-  const searchUser = async () => {
-    if (!searchEmail) return;
+  // 🔹 SEARCH USERS (REAL-TIME)
+  const searchUser = async (value) => {
+    setSearchEmail(value);
 
-    const { data } = await supabase
+    if (!value) {
+      setSearchResult([]);
+      return;
+    }
+
+    const { data, error } = await supabase
       .from("users")
       .select("*")
-      .eq("email", searchEmail)
-      .single();
+      .ilike("email", `%${value}%`);
 
-    if (data && data.id !== currentUser.id) {
-      setSearchResult(data);
-    } else {
-      setSearchResult(null);
-      setErrorPopup("User not found");
+    if (!error && data) {
+      const filtered = data.filter((u) => u.id !== currentUser?.id);
+      setSearchResult(filtered);
     }
   };
 
+  // 🔹 INIT
   useEffect(() => {
     const init = async () => {
       const user = await fetchCurrentUser();
@@ -112,6 +119,7 @@ function Messaging() {
     init();
   }, []);
 
+  // 🔹 LOAD MESSAGES WHEN USER CHANGES
   useEffect(() => {
     fetchMessages();
   }, [selectedUser]);
@@ -120,32 +128,44 @@ function Messaging() {
     <Layout>
       <div className="chat-container">
 
-        {/* LEFT: Conversations */}
+        {/* SIDEBAR */}
         <div className="chat-sidebar">
           <h3>Chats</h3>
 
+          {/* SEARCH */}
           <div className="search-box">
             <input
-              type="email"
+              type="text"
               placeholder="Search by email..."
               value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
+              onChange={(e) => searchUser(e.target.value)}
             />
-            <button onClick={searchUser}>Search</button>
           </div>
 
-          {searchResult && (
-            <div
-              className="chat-user"
-              onClick={() => {
-                setSelectedUser(searchResult);
-                setSearchResult(null);
-              }}
-            >
-              {searchResult.name}
-            </div>
-          )}
+          {/* SEARCH RESULTS */}
+          {searchResult.length > 0 &&
+            searchResult.map((user) => (
+              <div
+                key={user.id}
+                className="chat-user"
+                onClick={() => {
+                  setSelectedUser(user);
+                  setSearchResult([]);
+                  setSearchEmail("");
+                }}
+              >
+                <div className="chat-avatar">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
 
+                <div className="chat-info">
+                  <span className="chat-name">{user.name}</span>
+                  <span className="chat-last">{user.email}</span>
+                </div>
+              </div>
+            ))}
+
+          {/* CONVERSATIONS */}
           {conversations.map((user) => (
             <div
               key={user.id}
@@ -154,46 +174,58 @@ function Messaging() {
               }`}
               onClick={() => setSelectedUser(user)}
             >
-              {user.name}
+              <div className="chat-avatar">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+
+              <div className="chat-info">
+                <span className="chat-name">{user.name}</span>
+                <span className="chat-last">Tap to chat</span>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* RIGHT: Messages */}
+        {/* MAIN CHAT */}
         <div className="chat-main">
           {!selectedUser ? (
-            <p className="no-chat">Select a conversation</p>
+            <div className="no-chat">Select a conversation</div>
           ) : (
             <>
+              {/* HEADER */}
               <div className="chat-header">
                 Chat with {selectedUser.name}
               </div>
 
+              {/* MESSAGES */}
               <div className="messages-list">
                 {loading ? (
                   <p>Loading...</p>
                 ) : (
-                  messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`message ${
-                        msg.sender_id === currentUser.id
-                          ? "sent"
-                          : "received"
-                      }`}
-                    >
-                      {msg.content}
-                    </div>
-                  ))
+                  messages.map((msg) => {
+                    const isMe = msg.sender_id === currentUser.id;
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`message-row ${isMe ? "me" : "other"}`}
+                      >
+                        <div className="message-bubble">
+                          {msg.content}
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
+              {/* INPUT */}
               <div className="input-area">
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type message..."
+                  placeholder="Type a message"
                 />
                 <button onClick={sendMessage}>Send</button>
               </div>
@@ -202,14 +234,6 @@ function Messaging() {
         </div>
 
       </div>
-      {errorPopup && (
-      <div className="popup-overlay">
-        <div className="popup">
-          <p>{errorPopup}</p>
-          <button onClick={() => setErrorPopup("")}>OK</button>
-        </div>
-      </div>
-    )}
     </Layout>
   );
 }
