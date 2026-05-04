@@ -6,10 +6,13 @@ import "../../styles/messaging.css";
 function Messaging() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [selectedReceiver, setSelectedReceiver] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [errorPopup, setErrorPopup] = useState("");
 
   const fetchCurrentUser = async () => {
     const {
@@ -24,135 +27,189 @@ function Messaging() {
         .single();
 
       setCurrentUser(data);
+      return data;
     }
   };
 
-  const fetchUsers = async () => {
-    const { data } = await supabase.from("users").select("*");
-    setUsers(data);
+  const fetchConversations = async (user) => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
+    const userIds = new Set();
+
+    data.forEach((msg) => {
+      if (msg.sender_id !== user.id) userIds.add(msg.sender_id);
+      if (msg.receiver_id !== user.id) userIds.add(msg.receiver_id);
+    });
+
+    const { data: usersData } = await supabase
+      .from("users")
+      .select("*")
+      .in("id", [...userIds]);
+
+    setConversations(usersData || []);
   };
 
   const fetchMessages = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !selectedUser) return;
 
     setLoading(true);
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("messages")
       .select("*")
       .or(
-        `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`
       )
       .order("id", { ascending: true });
 
-    if (!error) {
-      setMessages(data);
-    }
-
+    setMessages(data || []);
     setLoading(false);
   };
 
   const sendMessage = async () => {
-    if (!message || !currentUser || !selectedReceiver) return;
+    if (!message || !currentUser || !selectedUser) return;
 
-    const { error } = await supabase.from("messages").insert([
+    await supabase.from("messages").insert([
       {
         sender_id: currentUser.id,
-        receiver_id: selectedReceiver,
+        receiver_id: selectedUser.id,
         content: message,
       },
     ]);
 
-    if (!error) {
-      setMessage("");
-      fetchMessages();
+    setMessage("");
+    fetchMessages();
+    fetchConversations(currentUser);
+  };
+
+  const searchUser = async () => {
+    if (!searchEmail) return;
+
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", searchEmail)
+      .single();
+
+    if (data && data.id !== currentUser.id) {
+      setSearchResult(data);
+    } else {
+      setSearchResult(null);
+      setErrorPopup("User not found");
     }
   };
 
   useEffect(() => {
-    fetchCurrentUser();
-    fetchUsers();
+    const init = async () => {
+      const user = await fetchCurrentUser();
+      await fetchConversations(user);
+    };
+    init();
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      fetchMessages();
-    }
-  }, [currentUser]);
-
-  const filteredUsers = users.filter((u) => {
-    if (!currentUser || u.id === currentUser.id) return false;
-
-    if (currentUser.role === "student") {
-      return u.role === "doctor";
-    }
-
-    if (currentUser.role === "parent") {
-      return u.role === "doctor";
-    }
-
-    if (currentUser.role === "doctor") {
-      return true;
-    }
-
-    return false;
-  });
+    fetchMessages();
+  }, [selectedUser]);
 
   return (
     <Layout>
-      <div className="messaging-container">
-        <h2>Messaging</h2>
+      <div className="chat-container">
 
-        <select
-          value={selectedReceiver}
-          onChange={(e) => setSelectedReceiver(e.target.value)}
-        >
-          <option value="">Select Receiver</option>
-          {filteredUsers.map((user) => (
-            <option key={user.id} value={user.id}>
+        {/* LEFT: Conversations */}
+        <div className="chat-sidebar">
+          <h3>Chats</h3>
+
+          <div className="search-box">
+            <input
+              type="email"
+              placeholder="Search by email..."
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+            />
+            <button onClick={searchUser}>Search</button>
+          </div>
+
+          {searchResult && (
+            <div
+              className="chat-user"
+              onClick={() => {
+                setSelectedUser(searchResult);
+                setSearchResult(null);
+              }}
+            >
+              {searchResult.name}
+            </div>
+          )}
+
+          {conversations.map((user) => (
+            <div
+              key={user.id}
+              className={`chat-user ${
+                selectedUser?.id === user.id ? "active" : ""
+              }`}
+              onClick={() => setSelectedUser(user)}
+            >
               {user.name}
-            </option>
+            </div>
           ))}
-        </select>
+        </div>
 
-        <div className="messages-list">
-          {loading ? (
-            <p className="loading">Loading messages...</p>
-          ) : messages.length === 0 ? (
-            <p className="no-data">No messages yet</p>
+        {/* RIGHT: Messages */}
+        <div className="chat-main">
+          {!selectedUser ? (
+            <p className="no-chat">Select a conversation</p>
           ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`message-card ${
-                  msg.sender_id === currentUser?.id
-                    ? "message-sent"
-                    : "message-received"
-                }`}
-              >
-                <p>{msg.content}</p>
-
-                <div className="message-info">
-                  {msg.sender_id === currentUser?.id
-                    ? "You"
-                    : "Other user"}
-                </div>
+            <>
+              <div className="chat-header">
+                Chat with {selectedUser.name}
               </div>
-            ))
+
+              <div className="messages-list">
+                {loading ? (
+                  <p>Loading...</p>
+                ) : (
+                  messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`message ${
+                        msg.sender_id === currentUser.id
+                          ? "sent"
+                          : "received"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="input-area">
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Type message..."
+                />
+                <button onClick={sendMessage}>Send</button>
+              </div>
+            </>
           )}
         </div>
 
-        <div className="input-section">
-          <input
-            type="text"
-            placeholder="Type your message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-
-          <button onClick={sendMessage}>Send</button>
+      </div>
+      {errorPopup && (
+      <div className="popup-overlay">
+        <div className="popup">
+          <p>{errorPopup}</p>
+          <button onClick={() => setErrorPopup("")}>OK</button>
         </div>
       </div>
+    )}
     </Layout>
   );
 }
