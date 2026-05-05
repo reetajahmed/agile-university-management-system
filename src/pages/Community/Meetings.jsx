@@ -7,10 +7,14 @@ function Meetings() {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDoctorObj, setSelectedDoctorObj] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [date, setDate] = useState("");
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Get logged in user
   const fetchCurrentUser = async () => {
     const {
       data: { user },
@@ -28,6 +32,7 @@ function Meetings() {
     }
   };
 
+  // Get doctors
   const fetchUsers = async () => {
     const { data } = await supabase
       .from("users")
@@ -37,12 +42,32 @@ function Meetings() {
     setUsers(data || []);
   };
 
+  // Filter doctors by email
+  useEffect(() => {
+    if (!search) {
+      setFilteredDoctors([]);
+      return;
+    }
+
+    const results = users.filter((u) =>
+      u.email.toLowerCase().includes(search.toLowerCase())
+    );
+
+    setFilteredDoctors(results);
+  }, [search, users]);
+
+  // Fetch meetings
   const fetchMeetings = async (user) => {
     if (!user) return;
 
     setLoading(true);
 
-    let query = supabase.from("meetings").select("*");
+    let query = supabase
+    .from("meetings")
+    .select(`
+      *,
+      doctor:users!doctor_id(email, name)
+    `);
 
     if (user.role === "student") {
       query = query.eq("student_id", user.id);
@@ -62,6 +87,7 @@ function Meetings() {
     setLoading(false);
   };
 
+  // Create meeting
   const createMeeting = async () => {
     if (!selectedDoctor || !date || !currentUser) return;
 
@@ -79,6 +105,7 @@ function Meetings() {
     ]);
 
     setSelectedDoctor("");
+    setSelectedDoctorObj(null);
     setDate("");
     fetchMeetings(currentUser);
   };
@@ -100,17 +127,47 @@ function Meetings() {
 
         {currentUser?.role === "student" && (
           <div className="meeting-form">
-            <select
-              value={selectedDoctor}
-              onChange={(e) => setSelectedDoctor(e.target.value)}
-            >
-              <option value="">Select Doctor</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
+
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search doctor by email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            {filteredDoctors.length > 0 && (
+              <div className="doctor-results">
+                {filteredDoctors.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="doctor-item"
+                    onClick={() => {
+                      setSelectedDoctor(doc.id);
+                      setSelectedDoctorObj(doc);
+                      setSearch("");
+                      setFilteredDoctors([]);
+                    }}
+                  >
+                    <div className="doctor-avatar">
+                      {doc.name[0].toUpperCase()}
+                    </div>
+
+                    <div className="doctor-info">
+                      <span className="doctor-name">{doc.name}</span>
+                      <span className="doctor-email">{doc.email}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedDoctorObj && (
+              <div className="selected-doctor">
+                Selected: <strong>{selectedDoctorObj.name}</strong>
+              </div>
+            )}
 
             <input
               type="datetime-local"
@@ -130,7 +187,8 @@ function Meetings() {
           ) : (
             meetings.map((m) => (
               <div key={m.id} className="meeting-card">
-                <p>Doctor ID: {m.doctor_id}</p>
+                <p>Doctor: {m.doctor?.name}</p>
+                <p>Email: {m.doctor?.email}</p>
                 <p>Date: {new Date(m.date).toLocaleString()}</p>
               </div>
             ))
