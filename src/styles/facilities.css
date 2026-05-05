@@ -1,0 +1,636 @@
+/* ============================================================
+   FACILITIES MODULE — facilities.css
+   Color Palette: Primary Blue #2563EB, Dark Blue #1E40AF
+   ============================================================ */
+
+/* ---------- Layout ---------- */
+.fac-container {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding: 32px 24px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #1F2937;
+}
+
+.fac-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fac-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1E40AF;
+  margin: 0;
+}
+
+/* ---------- Tabs ---------- */
+.fac-tabs {
+  display: flex;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.fac-tab {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.fac-tab:hover {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.fac-tab.active {
+  background: #2563EB;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* ---------- Buttons ---------- */
+.fac-btn-primary {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fac-btn-primary:hover {
+  background: #1E40AF;
+}
+
+.fac-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fac-btn-secondary {
+  background: #FFFFFF;
+  color: #2563EB;
+  border: 1px solid #2563EB;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fac-btn-secondary:hover {
+  background: #EFF6FF;
+}
+
+.fac-btn-danger {
+  background: #FEF2F2;
+  color: #EF4444;
+  border: 1px solid #FECACA;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fac-btn-danger:hover {
+  background: #FEE2E2;
+}
+
+.fac-btn-success {
+  background: #ECFDF5;
+  color: #10B981;
+  border: 1px solid #A7F3D0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fac-btn-success:hover {
+  background: #D1FAE5;
+}
+
+.fac-btn-warning {
+  background: #FFFBEB;
+  color: #F59E0B;
+  border: 1px solid #FDE68A;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fac-btn-warning:hover {
+  background: #FEF3C7;
+}
+
+/* ---------- Filter Bar ---------- */
+.fac-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fac-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.fac-search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+  font-size: 14px;
+  color: #1F2937;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+
+.fac-search-input:focus {
+  border-color: #2563EB;
+  background: #FFFFFF;
+}
+
+.fac-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6B7280;
+  font-size: 16px;
+}
+
+.fac-select {
+  padding: 10px 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+  font-size: 14px;
+  color: #1F2937;
+  outline: none;
+  cursor: pointer;
+  transition: border 0.2s;
+}
+
+.fac-select:focus {
+  border-color: #2563EB;
+  background: #FFFFFF;
+}
+
+/* ---------- Cards Grid ---------- */
+.fac-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.fac-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.fac-card:hover {
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+.fac-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.fac-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 4px;
+}
+
+.fac-card-subtitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.fac-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fac-card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.fac-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Badges ---------- */
+.fac-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fac-badge-classroom {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.fac-badge-lab {
+  background: #F0FDF4;
+  color: #10B981;
+}
+
+.fac-badge-lecture_hall {
+  background: #FFF7ED;
+  color: #F59E0B;
+}
+
+.fac-badge-open {
+  background: #FEF9C3;
+  color: #854D0E;
+}
+
+.fac-badge-in-progress {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.fac-badge-resolved {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+.fac-badge-confirmed {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+.fac-badge-cancelled {
+  background: #FEF2F2;
+  color: #EF4444;
+}
+
+.fac-badge-pending {
+  background: #FEF9C3;
+  color: #854D0E;
+}
+
+/* ---------- Table ---------- */
+.fac-table-wrapper {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.fac-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fac-table thead {
+  background: #F9FAFB;
+}
+
+.fac-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B7280;
+  border-bottom: 1px solid #E5E7EB;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fac-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #1F2937;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.fac-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fac-table tbody tr:hover {
+  background: #EFF6FF;
+}
+
+.fac-table-footer {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #6B7280;
+  border-top: 1px solid #E5E7EB;
+  background: #F9FAFB;
+}
+
+/* ---------- Empty State ---------- */
+.fac-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #6B7280;
+}
+
+.fac-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.fac-empty p {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ---------- Alerts ---------- */
+.fac-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.fac-alert-success {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.fac-alert-error {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.fac-alert-warning {
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* ---------- Modal Overlay ---------- */
+.fac-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.fac-modal {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.fac-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.fac-modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E40AF;
+  margin: 0;
+}
+
+.fac-modal-body {
+  padding: 24px;
+}
+
+.fac-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.fac-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.fac-close-btn:hover {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+/* ---------- Form ---------- */
+.fac-form-group {
+  margin-bottom: 16px;
+}
+
+.fac-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.fac-input,
+.fac-select-input,
+.fac-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+  font-size: 14px;
+  color: #1F2937;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.fac-input:focus,
+.fac-select-input:focus,
+.fac-textarea:focus {
+  border-color: #2563EB;
+  background: #FFFFFF;
+}
+
+.fac-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.fac-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- Loading ---------- */
+.fac-loading {
+  text-align: center;
+  padding: 48px;
+  color: #6B7280;
+  font-size: 15px;
+}
+
+/* ---------- No Results ---------- */
+.fac-no-results {
+  text-align: center;
+  padding: 32px;
+  color: #6B7280;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+}
+
+/* ---------- Booking Slot ---------- */
+.fac-booking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #FFFFFF;
+  transition: box-shadow 0.2s;
+}
+
+.fac-booking-item:hover {
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.fac-booking-info h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.fac-booking-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+/* ---------- Section Header ---------- */
+.fac-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.fac-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E40AF;
+  margin: 0;
+}
+
+/* ---------- Stats Bar ---------- */
+.fac-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.fac-stat-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.fac-stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.fac-stat-label {
+  font-size: 13px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .fac-container { padding: 16px 12px; }
+  .fac-title { font-size: 22px; }
+  .fac-tabs { flex-direction: column; }
+  .fac-tab { text-align: center; }
+  .fac-form-row { grid-template-columns: 1fr; }
+  .fac-cards-grid { grid-template-columns: 1fr; }
+  .fac-stats { grid-template-columns: repeat(2, 1fr); }
+}
