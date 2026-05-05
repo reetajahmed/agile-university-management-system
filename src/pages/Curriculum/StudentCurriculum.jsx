@@ -11,15 +11,14 @@ function StudentCurriculum({ currentUser }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [responses, setResponses] = useState({});
+  const [submittingId, setSubmittingId] = useState(null);
+  const [assignmentMessage, setAssignmentMessage] = useState("");
 
   const fetchCurriculum = async () => {
     setLoading(true);
-
-    if (currentUser) {
-      await fetchRegistrations(currentUser.id);
-    } else {
-      setRegistrations([]);
-    }
 
     const { data: coursesData } = await supabase
       .from("courses")
@@ -27,16 +26,70 @@ function StudentCurriculum({ currentUser }) {
       .order("name", { ascending: true });
 
     setCourses(coursesData || []);
+
+    if (currentUser) {
+      await fetchRegistrations(currentUser.id, coursesData || []);
+    } else {
+      setRegistrations([]);
+      setAssignments([]);
+      setSubmissions([]);
+    }
+
     setLoading(false);
   };
 
-  const fetchRegistrations = async (studentId) => {
+  const fetchRegistrations = async (studentId, courseCatalog = courses) => {
     const { data } = await supabase
       .from("enrollments")
       .select(`*, course:courses(*)`)
       .eq("student_id", studentId);
 
     setRegistrations(data || []);
+    await fetchAssignments(data || [], studentId, courseCatalog);
+  };
+
+  const fetchAssignments = async (
+    registrationData,
+    studentId,
+    courseCatalog = courses
+  ) => {
+    const courseIds = registrationData
+      .map((item) => item.course_id || item.course?.id)
+      .filter(Boolean);
+
+    const { data: assignmentsData, error: assignmentsError } = await supabase
+      .from("assignments")
+      .select("*")
+      .order("deadline", { ascending: true });
+
+    if (assignmentsError) {
+      console.log(assignmentsError);
+      setAssignmentMessage(`Assignments could not load: ${assignmentsError.message}`);
+    }
+
+    const { data: submissionsData } = await supabase
+      .from("assignment_submissions")
+      .select("*")
+      .eq("student_id", studentId);
+
+    const registeredCourseIds = courseIds.map((id) => String(id));
+    const allAssignments = assignmentsData || [];
+    const registeredAssignments = allAssignments.filter((assignment) =>
+      registeredCourseIds.includes(String(assignment.course_id))
+    );
+
+    const visibleAssignments =
+      registeredAssignments.length > 0 ? registeredAssignments : allAssignments;
+
+    const assignmentsWithCourses = visibleAssignments.map((assignment) => ({
+      ...assignment,
+      course: courseCatalog.find(
+        (course) => String(course.id) === String(assignment.course_id)
+      ),
+    }));
+
+    setAssignments(assignmentsWithCourses);
+    setSubmissions(submissionsData || []);
   };
 
   const registerCourse = async (courseId) => {
@@ -80,8 +133,48 @@ function StudentCurriculum({ currentUser }) {
     setSelectedCourse(course);
   };
 
+  const submitAssignment = async (assignmentId) => {
+    const response = responses[assignmentId];
+
+    if (!response || !currentUser || submittingId) {
+      setAssignmentMessage("Please write a response before submitting.");
+      return;
+    }
+
+    setSubmittingId(assignmentId);
+    setAssignmentMessage("");
+
+    const { data, error } = await supabase.from("assignment_submissions").insert([
+      {
+        assignment_id: assignmentId,
+        student_id: currentUser.id,
+        response,
+      },
+    ]);
+
+    if (error) {
+      console.log(error);
+      setAssignmentMessage(`Response was not submitted: ${error.message}`);
+    } else {
+      console.log(data);
+      setResponses({ ...responses, [assignmentId]: "" });
+      setAssignmentMessage("Response submitted successfully.");
+      await fetchAssignments(registrations, currentUser.id);
+    }
+
+    setSubmittingId(null);
+  };
+
   const isRegistered = (courseId) =>
     registrations.some((item) => item.course_id === courseId);
+
+  const hasSubmitted = (assignmentId) =>
+    submissions.some((item) => String(item.assignment_id) === String(assignmentId));
+
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "No deadline";
+    return new Date(deadline).toLocaleDateString();
+  };
 
   const getCourseType = (course) => course?.Type || "Uncategorized";
 
@@ -124,6 +217,21 @@ function StudentCurriculum({ currentUser }) {
 
     return acc;
   }, {});
+
+  const weekDays = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const formatTime = (time) => {
+    if (!time) return "TBA";
+    return time.slice(0, 5);
+  };
 
   const renderCourseCard = (course, showRequired) => (
     <div key={course.id} className="course-card">
@@ -168,6 +276,150 @@ function StudentCurriculum({ currentUser }) {
           <p className="loading">Loading curriculum...</p>
         ) : (
           <>
+            <section className="curriculum-section">
+              <div className="section-header">
+                <h3>Assignments</h3>
+                <span>{assignments.length} assignments</span>
+              </div>
+
+              <div className="materials-list">
+                {assignments.length === 0 ? (
+                  <p className="no-results">No assignments available</p>
+                ) : (
+                  assignments.map((assignment) => (
+                    <div key={assignment.id} className="assignment-card">
+                      <div className="assignment-card-header">
+                        <div>
+                          <h4>{assignment.title}</h4>
+                          <p>
+                            {assignment.course?.name || "Registered course"}{" "}
+                            {assignment.course?.["Course Code"]}
+                          </p>
+                        </div>
+
+                        <span className="deadline-badge">
+                          {formatDeadline(assignment.deadline)}
+                        </span>
+                      </div>
+
+                      {hasSubmitted(assignment.id) ? (
+                        <p className="submitted-label">Submitted</p>
+                      ) : (
+                        <>
+                          <textarea
+                            placeholder="Write your response..."
+                            value={responses[assignment.id] || ""}
+                            onChange={(e) =>
+                              setResponses({
+                                ...responses,
+                                [assignment.id]: e.target.value,
+                              })
+                            }
+                          />
+
+                          <button
+                            className="register-btn submit-response-btn"
+                            onClick={() => submitAssignment(assignment.id)}
+                            disabled={submittingId === assignment.id}
+                          >
+                            {submittingId === assignment.id
+                              ? "Submitting..."
+                              : "Submit Response"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {assignmentMessage && (
+                <p className="form-message">{assignmentMessage}</p>
+              )}
+            </section>
+
+            <section className="curriculum-section">
+              <div className="section-header">
+                <h3>Class Schedule</h3>
+                <span>{registrations.length} classes</span>
+              </div>
+
+              {Object.keys(groupedSchedule).length === 0 ? (
+                <p className="no-results">No schedule available</p>
+              ) : (
+                <div className="schedule-board">
+                  {weekDays.map((day) => {
+                    const dayCourses = groupedSchedule[day] || [];
+
+                    return (
+                      <div key={day} className="schedule-column">
+                        <div className="schedule-column-header">{day}</div>
+
+                        <div className="schedule-column-body">
+                          {dayCourses.length === 0 ? (
+                            <p className="empty-day">No classes</p>
+                          ) : (
+                            dayCourses
+                              .sort((a, b) => (a.Time || "").localeCompare(b.Time || ""))
+                              .map((course) => (
+                                <div key={course.id} className="schedule-class-card">
+                                  <span className="schedule-time-modern">
+                                    {formatTime(course.Time)}
+                                  </span>
+
+                                  <h5>{course.name}</h5>
+
+                                  <span className="schedule-room">
+                                    {course.Room || "Room TBA"}
+                                  </span>
+                                </div>
+                              ))
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <section className="curriculum-section">
+              <h3>My Registered Courses</h3>
+
+              <div className="schedule-list">
+                {registrations.map((item) => {
+                  const course = item.course;
+
+                  return (
+                    <div key={item.id} className="schedule-card">
+                      <div>
+                        <h4>{course?.name}</h4>
+                        <p>{course?.Instructor}</p>
+                      </div>
+
+                      <div className="registered-actions">
+                        <button
+                          onClick={() => fetchMaterials(course)}
+                          className="view-btn small-action"
+                          disabled={!course}
+                        >
+                          View Materials
+                        </button>
+
+                        <button
+                          onClick={() => dropCourse(course?.id)}
+                          className="drop-btn"
+                          disabled={!course}
+                        >
+                          Drop
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Available Courses</h3>
@@ -224,59 +476,6 @@ function StudentCurriculum({ currentUser }) {
               )}
             </section>
 
-            <section className="curriculum-section">
-              <h3>My Registered Courses</h3>
-
-              <div className="schedule-list">
-                {registrations.map((item) => {
-                  const course = item.course;
-
-                  return (
-                    <div key={item.id} className="schedule-card">
-                      <div>
-                        <h4>{course?.name}</h4>
-                        <p>{course?.Instructor}</p>
-                      </div>
-
-                      <button
-                        onClick={() => dropCourse(course?.id)}
-                        className="drop-btn"
-                        disabled={!course}
-                      >
-                        Drop
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="curriculum-section">
-              <h3>Class Schedule</h3>
-
-              {Object.keys(groupedSchedule).length === 0 ? (
-                <p className="no-results">No schedule available</p>
-              ) : (
-                Object.keys(groupedSchedule).map((day) => (
-                  <div key={day} className="schedule-day">
-                    <h4 className="schedule-day-title">{day}</h4>
-
-                    {groupedSchedule[day].map((course) => (
-                      <div key={course.id} className="schedule-card-modern">
-                        <div className="schedule-left">
-                          <h5>{course.name}</h5>
-                          <span className="schedule-room">{course.Room}</span>
-                        </div>
-
-                        <div className="schedule-right">
-                          <span className="schedule-time-modern">{course.Time}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))
-              )}
-            </section>
           </>
         )}
 

@@ -243,6 +243,30 @@
   transform: none;
 }
 
+.registered-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.small-action {
+  width: auto;
+  min-width: 140px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.small-action:disabled {
+  background: #6B7280;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* ====================== OTHER STYLES ====================== */
 .registration-form {
   display: flex;
@@ -342,7 +366,8 @@
 }
 
 .material-row,
-.material-item {
+.material-item,
+.assignment-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -353,16 +378,91 @@
   border-radius: 8px;
 }
 
-.material-row h4 {
+.material-row h4,
+.assignment-row h4 {
   margin: 0 0 6px;
   color: #1F2937;
   font-size: 16px;
 }
 
-.material-row p {
+.material-row p,
+.assignment-row p {
   margin: 0;
   color: #6B7280;
   font-size: 14px;
+}
+
+.deadline-badge {
+  padding: 8px 12px;
+  background: #EFF6FF;
+  border-radius: 8px;
+  color: #1E40AF;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.assignment-card {
+  padding: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+}
+
+.assignment-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.assignment-card h4 {
+  margin: 0 0 6px;
+  color: #1E40AF;
+  font-size: 17px;
+}
+
+.assignment-card p {
+  margin: 0;
+  color: #6B7280;
+}
+
+.assignment-card textarea {
+  width: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  color: #1F2937;
+  resize: vertical;
+}
+
+.assignment-card textarea:focus {
+  outline: none;
+  border-color: #2563EB;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.submit-response-btn {
+  margin-top: 12px;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.submitted-label {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #10B981;
+  border-radius: 8px;
+  color: #FFFFFF !important;
+  font-weight: 700;
 }
 
 .material-title {
@@ -443,28 +543,86 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Schedule Modern */
-.schedule-card-modern {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  padding: 14px 18px;
-  margin-bottom: 10px;
-  transition: 0.2s;
+/* Timetable Schedule */
+.schedule-board {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(150px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
-.schedule-card-modern:hover {
-  border-color: #2563EB;
-  background: #EFF6FF;
+.schedule-column {
+  min-width: 150px;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+}
+
+.schedule-column-header {
+  padding: 12px;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.schedule-column-body {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 220px;
+  padding: 12px;
+  background: #F9FAFB;
+}
+
+.schedule-class-card {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-left: 4px solid #10B981;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-class-card h5 {
+  margin: 0;
+  color: #1F2937;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.schedule-room,
+.schedule-time-modern {
+  color: #6B7280;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schedule-time-modern {
+  color: #1E40AF;
+}
+
+.empty-day {
+  margin: 0;
+  padding: 18px 8px;
+  color: #6B7280;
+  font-size: 13px;
+  text-align: center;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
   .course-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedule-board {
+    grid-template-columns: repeat(7, 160px);
   }
 }
 
@@ -474,5 +632,20 @@
   }
   .course-grid {
     grid-template-columns: 1fr;
+  }
+
+  .schedule-card,
+  .registered-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .schedule-board {
+    grid-template-columns: 1fr;
+    overflow-x: visible;
+  }
+
+  .schedule-column {
+    min-width: 0;
   }
 }
