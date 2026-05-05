@@ -8,12 +8,18 @@ const MATERIALS_BUCKETS = ["course_materials", "course-materials"];
 function ProfessorCurriculum() {
   const [courses, setCourses] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
+  const [assignmentCourseId, setAssignmentCourseId] = useState("");
+  const [assignmentTitle, setAssignmentTitle] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [creatingAssignment, setCreatingAssignment] = useState(false);
   const [message, setMessage] = useState("");
+  const [assignmentMessage, setAssignmentMessage] = useState("");
 
   const fetchProfessorData = async () => {
     setLoading(true);
@@ -28,8 +34,14 @@ function ProfessorCurriculum() {
       .select(`*, course:courses(name, "Course Code")`)
       .order("id", { ascending: false });
 
+    const { data: assignmentsData } = await supabase
+      .from("assignments")
+      .select(`*, course:courses(name, "Course Code")`)
+      .order("deadline", { ascending: true });
+
     setCourses(coursesData || []);
     setMaterials(materialsData || []);
+    setAssignments(assignmentsData || []);
     setLoading(false);
   };
 
@@ -99,6 +111,39 @@ function ProfessorCurriculum() {
     }
 
     setUploading(false);
+  };
+
+  const createAssignment = async (e) => {
+    e.preventDefault();
+
+    if (!assignmentCourseId || !assignmentTitle || !deadline || creatingAssignment) {
+      setAssignmentMessage("Please select a course, enter a title, and choose a deadline.");
+      return;
+    }
+
+    setCreatingAssignment(true);
+    setAssignmentMessage("");
+
+    const { error } = await supabase.from("assignments").insert([
+      {
+        course_id: assignmentCourseId,
+        title: assignmentTitle,
+        deadline,
+      },
+    ]);
+
+    if (error) {
+      console.log(error);
+      setAssignmentMessage(`Assignment was not created: ${error.message}`);
+    } else {
+      setAssignmentCourseId("");
+      setAssignmentTitle("");
+      setDeadline("");
+      setAssignmentMessage("Assignment created successfully.");
+      await fetchProfessorData();
+    }
+
+    setCreatingAssignment(false);
   };
 
   useEffect(() => {
@@ -180,6 +225,76 @@ function ProfessorCurriculum() {
                       >
                         Open
                       </a>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="curriculum-section">
+              <div className="section-header">
+                <h3>Create Assignment</h3>
+                <span>{assignments.length} assignments</span>
+              </div>
+
+              <form className="material-form" onSubmit={createAssignment}>
+                <select
+                  value={assignmentCourseId}
+                  onChange={(e) => setAssignmentCourseId(e.target.value)}
+                >
+                  <option value="">Select course</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name} - {course["Course Code"]}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  placeholder="Assignment title"
+                  value={assignmentTitle}
+                  onChange={(e) => setAssignmentTitle(e.target.value)}
+                />
+
+                <input
+                  type="datetime-local"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                />
+
+                <button type="submit" disabled={creatingAssignment}>
+                  {creatingAssignment ? "Creating..." : "Create Assignment"}
+                </button>
+              </form>
+
+              {assignmentMessage && (
+                <p className="form-message">{assignmentMessage}</p>
+              )}
+            </section>
+
+            <section className="curriculum-section">
+              <div className="section-header">
+                <h3>Assignments</h3>
+                <span>{assignments.length} assignments</span>
+              </div>
+
+              <div className="materials-list">
+                {assignments.length === 0 ? (
+                  <p className="no-results">No assignments created yet</p>
+                ) : (
+                  assignments.map((item) => (
+                    <div key={item.id} className="assignment-row">
+                      <div>
+                        <h4>{item.title}</h4>
+                        <p>
+                          {item.course?.name} {item.course?.["Course Code"]}
+                        </p>
+                      </div>
+
+                      <span className="deadline-badge">
+                        {new Date(item.deadline).toLocaleString()}
+                      </span>
                     </div>
                   ))
                 )}
