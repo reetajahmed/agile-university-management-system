@@ -3,6 +3,8 @@ import Layout from "../../components/Layout";
 import { supabase } from "../../services/supabaseClient";
 import "../../styles/curriculum.css";
 
+const ASSIGNMENT_SUBMISSIONS_BUCKET = "assignment_submissions";
+
 function StudentCurriculum({ currentUser }) {
   const [courses, setCourses] = useState([]);
   const [registrations, setRegistrations] = useState([]);
@@ -13,7 +15,7 @@ function StudentCurriculum({ currentUser }) {
   const [materials, setMaterials] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
-  const [responses, setResponses] = useState({});
+  const [submissionFiles, setSubmissionFiles] = useState({});
   const [submittingId, setSubmittingId] = useState(null);
   const [assignmentMessage, setAssignmentMessage] = useState("");
 
@@ -57,14 +59,14 @@ function StudentCurriculum({ currentUser }) {
       .map((item) => item.course_id || item.course?.id)
       .filter(Boolean);
 
-    const { data: assignmentsData, error: assignmentsError } = await supabase
+    const { data: assignmentsData, error } = await supabase
       .from("assignments")
       .select("*")
       .order("deadline", { ascending: true });
 
-    if (assignmentsError) {
-      console.log(assignmentsError);
-      setAssignmentMessage(`Assignments could not load: ${assignmentsError.message}`);
+    if (error) {
+      console.log(error);
+      setAssignmentMessage(`Assignments could not load: ${error.message}`);
     }
 
     const { data: submissionsData } = await supabase
@@ -134,31 +136,54 @@ function StudentCurriculum({ currentUser }) {
   };
 
   const submitAssignment = async (assignmentId) => {
-    const response = responses[assignmentId];
+    const file = submissionFiles[assignmentId];
 
-    if (!response || !currentUser || submittingId) {
-      setAssignmentMessage("Please write a response before submitting.");
+    if (!file || !currentUser || submittingId) {
+      setAssignmentMessage("Please choose a PDF file before submitting.");
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      setAssignmentMessage("Only PDF files are allowed.");
       return;
     }
 
     setSubmittingId(assignmentId);
     setAssignmentMessage("");
 
-    const { data, error } = await supabase.from("assignment_submissions").insert([
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "-");
+    const filePath = `${assignmentId}/${currentUser.id}/${Date.now()}-${safeFileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(ASSIGNMENT_SUBMISSIONS_BUCKET)
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.log(uploadError);
+      setAssignmentMessage(`PDF upload failed: ${uploadError.message}`);
+      setSubmittingId(null);
+      return;
+    }
+
+    const { data: fileData } = supabase.storage
+      .from(ASSIGNMENT_SUBMISSIONS_BUCKET)
+      .getPublicUrl(filePath);
+
+    const { error } = await supabase.from("assignment_submissions").insert([
       {
         assignment_id: assignmentId,
         student_id: currentUser.id,
-        response,
+        file_url: fileData.publicUrl,
+        file_name: file.name,
       },
     ]);
 
     if (error) {
       console.log(error);
-      setAssignmentMessage(`Response was not submitted: ${error.message}`);
+      setAssignmentMessage(`PDF was uploaded, but submission was not saved: ${error.message}`);
     } else {
-      console.log(data);
-      setResponses({ ...responses, [assignmentId]: "" });
-      setAssignmentMessage("Response submitted successfully.");
+      setSubmissionFiles({ ...submissionFiles, [assignmentId]: null });
+      setAssignmentMessage("PDF submitted successfully.");
       await fetchAssignments(registrations, currentUser.id);
     }
 
@@ -306,13 +331,14 @@ function StudentCurriculum({ currentUser }) {
                         <p className="submitted-label">Submitted</p>
                       ) : (
                         <>
-                          <textarea
-                            placeholder="Write your response..."
-                            value={responses[assignment.id] || ""}
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            className="assignment-file-input"
                             onChange={(e) =>
-                              setResponses({
-                                ...responses,
-                                [assignment.id]: e.target.value,
+                              setSubmissionFiles({
+                                ...submissionFiles,
+                                [assignment.id]: e.target.files[0],
                               })
                             }
                           />
