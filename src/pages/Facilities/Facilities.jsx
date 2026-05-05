@@ -5,6 +5,7 @@ import {
 } from "./facilitiesService";
 import { RoomsTab, BookingsTab, IssuesTab, EquipmentTab } from "./FacilitiesTabs";
 import "../../styles/facilities.css";
+import Layout from "../../components/Layout";
 
 export default function Facilities() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,6 +48,7 @@ export default function Facilities() {
   ];
 
   return (
+  <Layout>
     <div className="fac-container">
       <div className="fac-header">
         <h1 className="fac-title">Facilities Management</h1>
@@ -113,5 +115,6 @@ export default function Facilities() {
         </>
       )}
     </div>
+  </Layout>
   );
 }
