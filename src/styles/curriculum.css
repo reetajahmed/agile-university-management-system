@@ -905,3 +905,15 @@
   color: #374151;
   line-height: 1.5;
 }
+
+.quiz-question-box {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 20px;
+  border: 1px solid #dbeafe;
+}
+
+.quiz-question-box input {
+  margin-bottom: 12px;
+}

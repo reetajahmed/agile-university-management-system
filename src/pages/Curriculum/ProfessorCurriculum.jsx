@@ -28,6 +28,26 @@ function ProfessorCurriculum() {
   const [assignmentMessage, setAssignmentMessage] = useState("");
   const [gradingMessage, setGradingMessage] = useState("");
 
+  const [quizCourseId, setQuizCourseId] = useState("");
+  const [quizTitle, setQuizTitle] = useState("");
+  const [quizInstructions, setQuizInstructions] = useState("");
+  const [quizDuration, setQuizDuration] = useState("");
+  const [quizDeadline, setQuizDeadline] = useState("");
+
+  const [questions, setQuestions] = useState([
+    {
+      question: "",
+      option_a: "",
+      option_b: "",
+      option_c: "",
+      option_d: "",
+      correct_answer: "",
+    },
+  ]);
+
+  const [quizMessage, setQuizMessage] = useState("");
+  const [creatingQuiz, setCreatingQuiz] = useState(false);
+
   const fetchProfessorData = async () => {
     setLoading(true);
 
@@ -262,6 +282,99 @@ function ProfessorCurriculum() {
     setCreatingAssignment(false);
   };
 
+  const addQuestion = () => {
+  setQuestions([
+    ...questions,
+    {
+      question: "",
+      option_a: "",
+      option_b: "",
+      option_c: "",
+      option_d: "",
+      correct_answer: "",
+    },
+  ]);
+};
+
+const createQuiz = async (e) => {
+  e.preventDefault();
+
+  if (
+    !quizCourseId ||
+    !quizTitle ||
+    !quizDeadline ||
+    !quizDuration
+  ) {
+    setQuizMessage("Please complete quiz information.");
+    return;
+  }
+
+  setCreatingQuiz(true);
+  setQuizMessage("");
+
+  const { data: quizData, error: quizError } =
+    await supabase
+      .from("quizzes")
+      .insert([
+        {
+          course_id: quizCourseId,
+          title: quizTitle,
+          instructions: quizInstructions,
+          duration: quizDuration,
+          deadline: quizDeadline,
+        },
+      ])
+      .select()
+      .single();
+
+  if (quizError) {
+    console.log(quizError);
+    setQuizMessage("Quiz creation failed.");
+    setCreatingQuiz(false);
+    return;
+  }
+
+  const formattedQuestions = questions.map((q) => ({
+    quiz_id: quizData.id,
+    question: q.question,
+    option_a: q.option_a,
+    option_b: q.option_b,
+    option_c: q.option_c,
+    option_d: q.option_d,
+    correct_answer: q.correct_answer,
+  }));
+
+  const { error: questionError } = await supabase
+    .from("quiz_questions")
+    .insert(formattedQuestions);
+
+  if (questionError) {
+    console.log(questionError);
+    setQuizMessage("Questions could not be saved.");
+  } else {
+    setQuizMessage("Quiz created successfully.");
+
+    setQuizCourseId("");
+    setQuizTitle("");
+    setQuizInstructions("");
+    setQuizDuration("");
+    setQuizDeadline("");
+
+    setQuestions([
+      {
+        question: "",
+        option_a: "",
+        option_b: "",
+        option_c: "",
+        option_d: "",
+        correct_answer: "",
+      },
+    ]);
+  }
+
+  setCreatingQuiz(false);
+};
+
   useEffect(() => {
     fetchProfessorData();
   }, []);
@@ -460,6 +573,179 @@ function ProfessorCurriculum() {
                 </p>
               )}
             </section>
+
+            <section className="curriculum-section">
+  <div className="section-header">
+    <h3>Create Quiz</h3>
+  </div>
+
+  <form
+    className="material-form"
+    onSubmit={createQuiz}
+  >
+
+    <select
+      value={quizCourseId}
+      onChange={(e) =>
+        setQuizCourseId(e.target.value)
+      }
+    >
+      <option value="">
+        Select course
+      </option>
+
+      {courses.map((course) => (
+        <option
+          key={course.id}
+          value={course.id}
+        >
+          {course.name} -{" "}
+          {course["Course Code"]}
+        </option>
+      ))}
+    </select>
+
+    <input
+      type="text"
+      placeholder="Quiz title"
+      value={quizTitle}
+      onChange={(e) =>
+        setQuizTitle(e.target.value)
+      }
+    />
+
+    <textarea
+      placeholder="Quiz instructions"
+      value={quizInstructions}
+      onChange={(e) =>
+        setQuizInstructions(e.target.value)
+      }
+    />
+
+    <input
+      type="number"
+      placeholder="Duration in minutes"
+      value={quizDuration}
+      onChange={(e) =>
+        setQuizDuration(e.target.value)
+      }
+    />
+
+    <input
+      type="datetime-local"
+      value={quizDeadline}
+      onChange={(e) =>
+        setQuizDeadline(e.target.value)
+      }
+    />
+
+    <h4>Questions</h4>
+
+    {questions.map((q, index) => (
+      <div
+        key={index}
+        className="quiz-question-box"
+      >
+
+        <input
+          type="text"
+          placeholder={`Question ${index + 1}`}
+          value={q.question}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].question =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+        <input
+          type="text"
+          placeholder="Option A"
+          value={q.option_a}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].option_a =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+        <input
+          type="text"
+          placeholder="Option B"
+          value={q.option_b}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].option_b =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+        <input
+          type="text"
+          placeholder="Option C"
+          value={q.option_c}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].option_c =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+        <input
+          type="text"
+          placeholder="Option D"
+          value={q.option_d}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].option_d =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+        <input
+          type="text"
+          placeholder="Correct Answer"
+          value={q.correct_answer}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[index].correct_answer =
+              e.target.value;
+            setQuestions(updated);
+          }}
+        />
+
+      </div>
+    ))}
+
+    <button
+      type="button"
+      onClick={addQuestion}
+    >
+      Add Question
+    </button>
+
+    <button
+      type="submit"
+      disabled={creatingQuiz}
+    >
+      {creatingQuiz
+        ? "Creating Quiz..."
+        : "Create Quiz"}
+    </button>
+
+  </form>
+
+  {quizMessage && (
+    <p className="form-message">
+      {quizMessage}
+    </p>
+  )}
+</section>
 
             {/* Assignments */}
             <section className="curriculum-section">
