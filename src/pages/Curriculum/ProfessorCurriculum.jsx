@@ -33,6 +33,8 @@ function ProfessorCurriculum() {
   const [quizInstructions, setQuizInstructions] = useState("");
   const [quizDuration, setQuizDuration] = useState("");
   const [quizDeadline, setQuizDeadline] = useState("");
+  const [quizzes, setQuizzes] = useState([]);
+const [quizSubmissions, setQuizSubmissions] = useState([]);
 
   const [questions, setQuestions] = useState([
     {
@@ -81,6 +83,15 @@ function ProfessorCurriculum() {
       .in("course_id", courseIds)
       .order("deadline", { ascending: true });
 
+      const { data: quizzesData } = await supabase
+  .from("quizzes")
+  .select(`
+    *,
+    course:courses(name, "Course Code")
+  `)
+  .in("course_id", courseIds)
+  .order("created_at", { ascending: false });
+
     const { data: submissionsData } = await supabase
       .from("assignment_submissions")
       .select(`
@@ -92,6 +103,23 @@ function ProfessorCurriculum() {
         )
       `)
       .order("id", { ascending: false });
+
+      const quizIds = (quizzesData || []).map(
+  (quiz) => quiz.id
+);
+
+const { data: quizSubmissionsData } = await supabase
+  .from("quiz_submissions")
+  .select(`
+    *,
+    quiz:quizzes(
+      title,
+      course:courses(name)
+    )
+  `)
+  .in("quiz_id", quizIds)
+  .order("submitted_at", { ascending: false });
+
 
     const filteredSubmissions = (submissionsData || []).filter(
   (submission) =>
@@ -120,6 +148,8 @@ function ProfessorCurriculum() {
     setAssignments(assignmentsData || []);
     setSubmissions(filteredSubmissions);
     setGroupedSubmissions(grouped);
+    setQuizzes(quizzesData || []);
+    setQuizSubmissions(quizSubmissionsData || []);
 
     setLoading(false);
   };
@@ -747,6 +777,54 @@ const createQuiz = async (e) => {
   )}
 </section>
 
+<section className="curriculum-section">
+  <div className="section-header">
+    <h3>Created Quizzes</h3>
+
+    <span>
+      {quizzes.length} quizzes
+    </span>
+  </div>
+
+  <div className="materials-list">
+
+    {quizzes.length === 0 ? (
+      <p className="no-results">
+        No quizzes created yet
+      </p>
+    ) : (
+      quizzes.map((quiz) => (
+        <div
+          key={quiz.id}
+          className="assignment-row"
+        >
+
+          <div>
+            <h4>{quiz.title}</h4>
+
+            <p>
+              {quiz.course?.name}{" "}
+              {quiz.course?.["Course Code"]}
+            </p>
+
+            <p>
+              Duration: {quiz.duration} mins
+            </p>
+          </div>
+
+          <span className="deadline-badge">
+            {new Date(
+              quiz.deadline
+            ).toLocaleString()}
+          </span>
+
+        </div>
+      ))
+    )}
+
+  </div>
+</section>
+
             {/* Assignments */}
             <section className="curriculum-section">
               <div className="section-header">
@@ -961,6 +1039,67 @@ const createQuiz = async (e) => {
                 </p>
               )}
             </section>
+
+            <section className="curriculum-section">
+
+  <div className="section-header">
+    <h3>Quiz Submissions</h3>
+
+    <span>
+      {quizSubmissions.length} submissions
+    </span>
+  </div>
+
+  <div className="materials-list">
+
+    {quizSubmissions.length === 0 ? (
+      <p className="no-results">
+        No quiz submissions yet
+      </p>
+    ) : (
+      quizSubmissions.map((submission) => (
+        <div
+          key={submission.id}
+          className="assignment-row"
+        >
+
+          <div className="assignment-info">
+
+            <h4>
+              {submission.quiz?.title}
+            </h4>
+
+            <p>
+              Course:{" "}
+              {
+                submission.quiz?.course
+                  ?.name
+              }
+            </p>
+
+            <p>
+              Student ID:{" "}
+              {submission.student_id}
+            </p>
+
+            <p>
+              Score:{" "}
+              {submission.score ?? 0}
+            </p>
+
+          </div>
+
+          <span className="graded-badge">
+            Submitted
+          </span>
+
+        </div>
+      ))
+    )}
+
+  </div>
+
+</section>
           </>
         )}
       </div>
