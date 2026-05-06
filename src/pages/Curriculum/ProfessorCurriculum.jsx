@@ -20,6 +20,8 @@ function ProfessorCurriculum() {
   const [creatingAssignment, setCreatingAssignment] = useState(false);
   const [message, setMessage] = useState("");
   const [assignmentMessage, setAssignmentMessage] = useState("");
+  const [submissions, setSubmissions] = useState([]);
+  const [gradingMessage, setGradingMessage] = useState("");
 
   const fetchProfessorData = async () => {
     setLoading(true);
@@ -39,11 +41,39 @@ function ProfessorCurriculum() {
       .select(`*, course:courses(name, "Course Code")`)
       .order("deadline", { ascending: true });
 
+      const { data: submissionsData } = await supabase
+      .from("assignment_submissions")
+      .select(`
+        *,
+        assignment:assignments(title)
+      `)
+      .order("id", { ascending: false });
+
     setCourses(coursesData || []);
     setMaterials(materialsData || []);
     setAssignments(assignmentsData || []);
+    setSubmissions(submissionsData || []);
     setLoading(false);
   };
+
+  const gradeSubmission = async (submissionId, grade, feedback) => {
+  const { error } = await supabase
+    .from("assignment_submissions")
+    .update({
+      grade,
+      feedback,
+      graded_at: new Date(),
+    })
+    .eq("id", submissionId);
+
+  if (error) {
+    console.log(error);
+    setGradingMessage("Failed to save grade.");
+  } else {
+    setGradingMessage("Grade saved successfully.");
+    await fetchProfessorData();
+  }
+};
 
   const uploadMaterial = async (e) => {
     e.preventDefault();
@@ -300,6 +330,102 @@ function ProfessorCurriculum() {
                 )}
               </div>
             </section>
+
+            <section className="curriculum-section">
+            <div className="section-header">
+              <h3>Assignment Submissions</h3>
+              <span>{submissions.length} submissions</span>
+            </div>
+
+            <div className="materials-list">
+              {submissions.length === 0 ? (
+                <p className="no-results">No submissions yet</p>
+              ) : (
+                submissions.map((submission) => (
+  <div key={submission.id} className="assignment-row">
+    
+    <div className="assignment-info">
+      <h4>{submission.assignment?.title}</h4>
+
+      {submission.grade !== null && submission.grade !== undefined ? (
+        <span className="graded-badge">
+          Graded • {submission.grade}/10
+        </span>
+      ) : (
+        <span className="pending-badge">
+          Pending
+        </span>
+      )}
+
+      <p>
+        Student ID: {submission.student_id}
+      </p>
+
+      <p>
+        {submission.file_name}
+      </p>
+    </div>
+
+    <div className="grading-box">
+      <a
+        href={submission.file_url}
+        target="_blank"
+        rel="noreferrer"
+        className="material-btn"
+      >
+        Open Submission
+      </a>
+
+      <input
+        type="number"
+        placeholder="Grade"
+        defaultValue={submission.grade || ""}
+        id={`grade-${submission.id}`}
+        disabled={
+          submission.grade !== null &&
+          submission.grade !== undefined
+        }
+      />
+
+      <textarea
+        placeholder="Write feedback"
+        defaultValue={submission.feedback || ""}
+        id={`feedback-${submission.id}`}
+        disabled={
+          submission.grade !== null &&
+          submission.grade !== undefined
+        }
+      />
+
+      {submission.grade === null ||
+      submission.grade === undefined ? (
+        <button
+          onClick={() =>
+            gradeSubmission(
+              submission.id,
+              document.getElementById(`grade-${submission.id}`).value,
+              document.getElementById(`feedback-${submission.id}`).value
+            )
+          }
+        >
+          Save Grade
+        </button>
+      ) : (
+        <button className="graded-btn" disabled>
+          Already Graded
+        </button>
+      )}
+    </div>
+
+  </div>
+))
+              )}
+            </div>
+
+            {gradingMessage && (
+              <p className="form-message">{gradingMessage}</p>
+            )}
+          </section>
           </>
         )}
       </div>
