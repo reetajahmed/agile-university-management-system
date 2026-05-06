@@ -32,11 +32,17 @@ function Progress() {
 
     setLoading(true);
 
+    // FIX FOR PARENT
+    const studentId =
+      currentUser.role === "parent"
+        ? currentUser.child_id
+        : currentUser.id;
+
     // 1. enrollments
     const { data: enrollmentsData, error: e1 } = await supabase
       .from("enrollments")
       .select("course_id")
-      .eq("student_id", currentUser.id);
+      .eq("student_id", studentId);
 
     if (e1) {
       console.error(e1);
@@ -56,7 +62,7 @@ function Progress() {
     const { data: progressData } = await supabase
       .from("student_progress")
       .select("*")
-      .eq("student_id", currentUser.id);
+      .eq("student_id", studentId);
 
     // 4. merge
     const merged = coursesData.map((course) => {
