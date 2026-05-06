@@ -26,6 +26,8 @@ function StudentCurriculum({ currentUser }) {
   const [quizSelections, setQuizSelections] = useState({});
   const [quizExpired, setQuizExpired] = useState(false);
   const [quizLocked, setQuizLocked] = useState(false);
+  const [selectedResultQuiz, setSelectedResultQuiz] =useState(null);
+  const [selectedResultQuestions, setSelectedResultQuestions] =useState([]);
 
   const fetchCurriculum = async () => {
     setLoading(true);
@@ -739,14 +741,34 @@ useEffect(() => {
                   </p>
 
                   <div className="student-grade-box">
-                    <strong>Score:</strong>{" "}
-                    {
-                      getQuizSubmission(
-                        quiz.id
-                      )?.score
-                    }
-                    /10
-                  </div>
+  <strong>Score:</strong>{" "}
+  {
+    getQuizSubmission(
+      quiz.id
+    )?.score
+  }
+  /10
+</div>
+
+<button
+  className="view-btn"
+  style={{
+    marginTop: "15px",
+  }}
+  onClick={() => {
+
+    setSelectedResultQuiz(
+      getQuizSubmission(quiz.id)
+    );
+
+    setSelectedResultQuestions(
+      quizQuestions[quiz.id] || []
+    );
+
+  }}
+>
+  View Results
+</button>
                 </>
               ) : (
                 <p className="pending-label">
@@ -1260,6 +1282,178 @@ useEffect(() => {
           </div>
         )}
       </div>
+
+      {selectedResultQuiz && (
+
+  <div
+    className="modal-overlay"
+    onClick={() =>
+      setSelectedResultQuiz(null)
+    }
+  >
+
+    <div
+      className="quiz-review-modal"
+      onClick={(e) =>
+        e.stopPropagation()
+      }
+    >
+
+      <div className="quiz-modal-header">
+
+        <div>
+
+          <h2>
+            Quiz Results
+          </h2>
+
+          <p>
+            Your Score:
+            {" "}
+            {
+              selectedResultQuiz.score
+            }
+            /10
+          </p>
+
+        </div>
+
+        <div className="quiz-score-badge">
+          {
+            selectedResultQuiz.score
+          }
+          /10
+        </div>
+
+      </div>
+
+      <div className="quiz-review-container">
+
+        {selectedResultQuestions.map(
+          (question, index) => {
+
+            const parsedAnswers =
+              selectedResultQuiz.answers
+                ? JSON.parse(
+                    selectedResultQuiz.answers
+                  )
+                : {};
+
+            const studentAnswer =
+              parsedAnswers[
+                question.id
+              ];
+
+            const isCorrect =
+              studentAnswer ===
+              question.correct_answer;
+
+            return (
+
+              <div
+                key={question.id}
+                className="quiz-review-question"
+              >
+
+                <h4>
+                  Q{index + 1}.
+                  {" "}
+                  {question.question}
+                </h4>
+
+                <p>
+
+                  <strong>
+                    Your Answer:
+                  </strong>
+
+                  {" "}
+
+                  <span
+                    className={
+                      isCorrect
+                        ? "correct-answer"
+                        : "wrong-answer"
+                    }
+                  >
+                    {studentAnswer ||
+                      "No Answer"}
+                  </span>
+
+                  {" "}
+
+                  <span
+                    className={
+                      isCorrect
+                        ? "correct-badge"
+                        : "wrong-badge"
+                    }
+                  >
+                    {isCorrect
+                      ? "Correct"
+                      : "Wrong"}
+                  </span>
+
+                </p>
+
+                <p>
+
+                  <strong>
+                    Correct Answer:
+                  </strong>
+
+                  {" "}
+
+                  <span className="correct-answer">
+                    {
+                      question.correct_answer
+                    }
+                  </span>
+
+                </p>
+
+              </div>
+
+            );
+
+          }
+        )}
+
+      </div>
+
+      <div className="feedback-box">
+
+        <h3>
+          Professor Feedback
+        </h3>
+
+        <div className="student-feedback-box">
+
+          {selectedResultQuiz.feedback ||
+            "No feedback yet."}
+
+        </div>
+
+      </div>
+
+      <div className="quiz-actions">
+
+        <button
+          className="register-btn"
+          onClick={() =>
+            setSelectedResultQuiz(null)
+          }
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
     </Layout>
   );
 }
