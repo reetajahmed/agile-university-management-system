@@ -267,7 +267,7 @@ function StudentCurriculum({ currentUser }) {
       <p>{course.description}</p>
       <p className="course-instructor">
       {course.professor?.name
-        ? `Professor ${course.professor.name.toUpperCase()}`
+        ? `Dr. ${course.professor.name}`
         : "No instructor assigned"}      
         </p>
 
