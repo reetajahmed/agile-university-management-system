@@ -23,9 +23,12 @@ function StudentCurriculum({ currentUser }) {
     setLoading(true);
 
     const { data: coursesData } = await supabase
-      .from("courses")
-      .select("*")
-      .order("name", { ascending: true });
+  .from("courses")
+  .select(`
+    *,
+    professor:users!courses_professor_id_fkey(name)
+  `)
+  .order("name", { ascending: true });
 
     setCourses(coursesData || []);
 
@@ -219,7 +222,7 @@ function StudentCurriculum({ currentUser }) {
     return (
       course.name?.toLowerCase().includes(term) ||
       course.description?.toLowerCase().includes(term) ||
-      course.Instructor?.toLowerCase().includes(term) ||
+      course.professor?.name?.toLowerCase().includes(term) ||
       course["Course Code"]?.toLowerCase().includes(term) ||
       course.Type?.toLowerCase().includes(term)
     );
@@ -262,6 +265,11 @@ function StudentCurriculum({ currentUser }) {
     <div key={course.id} className="course-card">
       <h4>{course.name}</h4>
       <p>{course.description}</p>
+      <p className="course-instructor">
+      {course.professor?.name
+        ? `Professor ${course.professor.name.toUpperCase()}`
+        : "No instructor assigned"}      
+        </p>
 
       <div className="course-meta">
         <span>{course["Course Code"]}</span>
@@ -420,7 +428,7 @@ function StudentCurriculum({ currentUser }) {
                     <div key={item.id} className="schedule-card">
                       <div>
                         <h4>{course?.name}</h4>
-                        <p>{course?.Instructor}</p>
+                        <p>{course?.professor?.name || "No instructor assigned"}</p>
                       </div>
 
                       <div className="registered-actions">
@@ -510,7 +518,10 @@ function StudentCurriculum({ currentUser }) {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <h2>{selectedCourse.name}</h2>
               <p>{selectedCourse.description}</p>
-              <p><strong>Instructor:</strong> {selectedCourse.Instructor}</p>
+              <p>
+                <strong>Instructor:</strong>{" "}
+                {selectedCourse.professor?.name || "No instructor assigned"}
+              </p>
               <p><strong>Type:</strong> {selectedCourse.Type}</p>
               <p><strong>Hours:</strong> {selectedCourse.Hours}</p>
 
