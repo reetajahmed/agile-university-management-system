@@ -834,3 +834,34 @@
   font-size: 14px;
   margin-top: 8px;
 }
+
+.course-submission-group {
+  margin-bottom: 40px;
+}
+
+.course-submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.course-submission-header h3 {
+  font-size: 26px;
+  color: #111827;
+}
+
+.course-submission-header span {
+  background: #dbeafe;
+  color: #1d4ed8;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
