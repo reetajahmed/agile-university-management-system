@@ -18,6 +18,14 @@ function StudentCurriculum({ currentUser }) {
   const [submissionFiles, setSubmissionFiles] = useState({});
   const [submittingId, setSubmittingId] = useState(null);
   const [assignmentMessage, setAssignmentMessage] = useState("");
+  const [quizzes, setQuizzes] = useState([]);
+  const [quizSubmissions, setQuizSubmissions] = useState([]);
+  const [quizQuestions, setQuizQuestions] = useState({});
+  const [activeQuiz, setActiveQuiz] = useState(null);
+  const [quizTimer, setQuizTimer] = useState(0);
+  const [quizSelections, setQuizSelections] = useState({});
+  const [quizExpired, setQuizExpired] = useState(false);
+  const [quizLocked, setQuizLocked] = useState(false);
 
   const fetchCurriculum = async () => {
     setLoading(true);
@@ -54,48 +62,340 @@ function StudentCurriculum({ currentUser }) {
   };
 
   const fetchAssignments = async (
-    registrationData,
-    studentId,
-    courseCatalog = courses
-  ) => {
-    const courseIds = registrationData
-      .map((item) => item.course_id || item.course?.id)
-      .filter(Boolean);
+  registrationData,
+  studentId,
+  courseCatalog = courses
+) => {
 
-    const { data: assignmentsData, error } = await supabase
-      .from("assignments")
+  const courseIds = registrationData
+    .map((item) => item.course_id || item.course?.id)
+    .filter(Boolean);
+
+  const registeredCourseIds = courseIds.map(
+    (id) => String(id)
+  );
+
+  // ASSIGNMENTS
+  const {
+    data: assignmentsData,
+    error,
+  } = await supabase
+    .from("assignments")
+    .select("*")
+    .order("deadline", {
+      ascending: true,
+    });
+
+  // QUIZZES
+  const { data: quizzesData } =
+    await supabase
+      .from("quizzes")
       .select("*")
-      .order("deadline", { ascending: true });
+      .order("deadline", {
+        ascending: true,
+      });
 
-    if (error) {
-      console.log(error);
-      setAssignmentMessage(`Assignments could not load: ${error.message}`);
-    }
+      const { data: questionsData } = await supabase
+  .from("quiz_questions")
+  .select("*");
 
-    const { data: submissionsData } = await supabase
+  // ASSIGNMENT SUBMISSIONS
+  const { data: submissionsData } =
+    await supabase
       .from("assignment_submissions")
       .select("*")
       .eq("student_id", studentId);
 
-    const registeredCourseIds = courseIds.map((id) => String(id));
-    const allAssignments = assignmentsData || [];
-    const registeredAssignments = allAssignments.filter((assignment) =>
-      registeredCourseIds.includes(String(assignment.course_id))
+  // QUIZ SUBMISSIONS
+  const { data: quizSubmissionsData } =
+    await supabase
+      .from("quiz_submissions")
+      .select("*")
+      .eq("student_id", studentId);
+
+  if (error) {
+    console.log(error);
+
+    setAssignmentMessage(
+      `Assignments could not load: ${error.message}`
+    );
+  }
+
+  // FILTER ASSIGNMENTS
+  const registeredAssignments =
+    (assignmentsData || []).filter(
+      (assignment) =>
+        registeredCourseIds.includes(
+          String(assignment.course_id)
+        )
     );
 
-    const visibleAssignments =
-      registeredAssignments.length > 0 ? registeredAssignments : allAssignments;
+  // FILTER QUIZZES
+  const registeredQuizzes =
+    (quizzesData || []).filter(
+      (quiz) =>
+        registeredCourseIds.includes(
+          String(quiz.course_id)
+        )
+    );
 
-    const assignmentsWithCourses = visibleAssignments.map((assignment) => ({
-      ...assignment,
+  // ASSIGNMENTS WITH COURSE INFO
+  const assignmentsWithCourses =
+    registeredAssignments.map(
+      (assignment) => ({
+        ...assignment,
+
+        course: courseCatalog.find(
+          (course) =>
+            String(course.id) ===
+            String(assignment.course_id)
+        ),
+      })
+    );
+
+  // QUIZZES WITH COURSE INFO
+  const quizzesWithCourses =
+    registeredQuizzes.map((quiz) => ({
+      ...quiz,
+
       course: courseCatalog.find(
-        (course) => String(course.id) === String(assignment.course_id)
+        (course) =>
+          String(course.id) ===
+          String(quiz.course_id)
       ),
     }));
 
-    setAssignments(assignmentsWithCourses);
-    setSubmissions(submissionsData || []);
-  };
+  const groupedQuestions = {};
+
+(questionsData || []).forEach((question) => {
+
+  if (!groupedQuestions[question.quiz_id]) {
+    groupedQuestions[question.quiz_id] = [];
+  }
+
+  groupedQuestions[question.quiz_id].push(question);
+});
+
+setQuizQuestions(groupedQuestions);
+
+  setAssignments(assignmentsWithCourses);
+
+  setSubmissions(
+    submissionsData || []
+  );
+
+  setQuizzes(
+    quizzesWithCourses
+  );
+
+  setQuizSubmissions(
+    quizSubmissionsData || []
+  );
+};
+
+
+
+const startQuiz = (quiz) => {
+
+  setActiveQuiz(quiz);
+
+  setQuizSelections({});
+
+  setQuizLocked(false);
+
+  setQuizTimer(
+    Number(quiz.duration) * 60
+  );
+};
+
+const finishQuiz = async () => {
+
+  // NO ACTIVE QUIZ
+  if (!activeQuiz) return;
+
+  // PREVENT SUBMIT AFTER TIME ENDS
+  if (quizTimer <= 0) {
+
+    setAssignmentMessage(
+      "Time ran out. You cannot submit this quiz."
+    );
+
+    return;
+  }
+
+  const questions =
+    quizQuestions[activeQuiz.id] || [];
+
+  // CHECK IF THERE ARE QUESTIONS
+  if (questions.length === 0) {
+
+    setAssignmentMessage(
+      "This quiz has no questions."
+    );
+
+    return;
+  }
+
+  // CHECK ALL QUESTIONS ANSWERED
+  const unanswered = questions.some(
+    (question) =>
+      !quizSelections[question.id]
+  );
+
+  if (unanswered) {
+
+    setAssignmentMessage(
+      "Please answer all questions before submitting."
+    );
+
+    return;
+  }
+
+  // COUNT CORRECT ANSWERS
+  let correctAnswers = 0;
+
+  questions.forEach((question) => {
+
+    const selected =
+      quizSelections[question.id];
+
+    if (
+      selected ===
+      question.correct_answer
+    ) {
+
+      correctAnswers++;
+
+    }
+
+  });
+
+  // CONVERT SCORE TO /10
+  const score = Math.round(
+    (
+      correctAnswers /
+      questions.length
+    ) * 10
+  );
+
+  // SAVE ANSWERS
+  const answers = JSON.stringify(
+    quizSelections
+  );
+
+  // CHECK IF STUDENT ALREADY SUBMITTED
+  const alreadySubmitted =
+    hasQuizSubmission(activeQuiz.id);
+
+  if (alreadySubmitted) {
+
+    setAssignmentMessage(
+      "You already submitted this quiz."
+    );
+
+    return;
+  }
+
+  const { error } = await supabase
+    .from("quiz_submissions")
+    .insert([
+      {
+        quiz_id: activeQuiz.id,
+
+        student_id:
+          currentUser.id,
+
+        answers,
+
+        score,
+
+        submitted_at:
+          new Date(),
+      },
+    ]);
+
+  if (error) {
+
+    console.log(error);
+
+    setAssignmentMessage(
+      "Quiz submission failed."
+    );
+
+  } else {
+
+    setAssignmentMessage(
+      `Quiz submitted successfully. Score: ${score}/10`
+    );
+
+    // REFRESH QUIZZES
+    await fetchAssignments(
+      registrations,
+      currentUser.id
+    );
+
+  }
+
+  // CLOSE QUIZ POPUP
+  setActiveQuiz(null);
+
+  // RESET TIMER
+  setQuizTimer(0);
+
+  // RESET ANSWERS
+  setQuizSelections({});
+
+};
+
+const autoFailQuiz = async () => {
+
+  if (!activeQuiz) return;
+
+  const alreadySubmitted =
+    hasQuizSubmission(activeQuiz.id);
+
+  if (alreadySubmitted) return;
+
+  const answers = JSON.stringify(
+    quizSelections
+  );
+
+  const { error } = await supabase
+    .from("quiz_submissions")
+    .insert([
+      {
+        quiz_id: activeQuiz.id,
+
+        student_id:
+          currentUser.id,
+
+        answers,
+
+        score: 0,
+
+        submitted_at:
+          new Date(),
+      },
+    ]);
+
+  if (error) {
+
+    console.log(error);
+
+  }
+
+  await fetchAssignments(
+    registrations,
+    currentUser.id
+  );
+
+  setQuizExpired(true);
+
+  setAssignmentMessage(
+    "Time ran out. Grade: 0/10"
+  );
+
+};
 
   const registerCourse = async (courseId) => {
     const course = courses.find((item) => item.id === courseId);
@@ -208,6 +508,18 @@ const getSubmission = (assignmentId) =>
       String(item.assignment_id) === String(assignmentId)
   );
 
+  const hasQuizSubmission = (quizId) =>
+  quizSubmissions.some(
+    (item) =>
+      String(item.quiz_id) === String(quizId)
+  );
+
+const getQuizSubmission = (quizId) =>
+  quizSubmissions.find(
+    (item) =>
+      String(item.quiz_id) === String(quizId)
+  );
+
   const formatDeadline = (deadline) => {
     if (!deadline) return "No deadline";
     return new Date(deadline).toLocaleDateString();
@@ -224,6 +536,47 @@ const getSubmission = (assignmentId) =>
   useEffect(() => {
     fetchCurriculum();
   }, [currentUser]);
+
+useEffect(() => {
+
+  let interval = null;
+
+  if (
+    activeQuiz &&
+    quizTimer > 0 &&
+    !quizLocked
+  ) {
+
+    interval = setInterval(() => {
+
+      setQuizTimer((prev) => prev - 1);
+
+    }, 1000);
+
+  }
+
+  // TIMER FINISHED
+  if (
+    activeQuiz &&
+    quizTimer <= 0 &&
+    !quizLocked
+  ) {
+
+    setQuizLocked(true);
+
+    autoFailQuiz();
+
+  }
+
+  return () => {
+
+    if (interval) {
+      clearInterval(interval);
+    }
+
+  };
+
+}, [quizTimer, activeQuiz, quizLocked]);
 
   const filteredCourses = courses.filter((course) => {
     const term = searchTerm.toLowerCase();
@@ -318,6 +671,109 @@ const getSubmission = (assignmentId) =>
           <p className="loading">Loading curriculum...</p>
         ) : (
           <>
+
+            <section className="curriculum-section">
+
+  <div className="section-header">
+    <h3>Quizzes</h3>
+
+    <span>
+      {quizzes.length} quizzes
+    </span>
+  </div>
+
+  <div className="materials-list">
+
+    {quizzes.length === 0 ? (
+      <p className="no-results">
+        No quizzes available
+      </p>
+    ) : (
+      quizzes.map((quiz) => (
+        <div
+          key={quiz.id}
+          className="assignment-card"
+        >
+
+          <div className="assignment-card-header">
+
+            <div>
+              <h4>{quiz.title}</h4>
+
+              <p>
+                {quiz.course?.name}{" "}
+                {quiz.course?.["Course Code"]}
+              </p>
+
+              <p>
+                Duration: {quiz.duration} mins
+              </p>
+            </div>
+
+            <span className="deadline-badge">
+              {formatDeadline(
+                quiz.deadline
+              )}
+            </span>
+
+          </div>
+
+          <div className="quiz-instructions">
+            {quiz.instructions}
+          </div>
+
+          {hasQuizSubmission(quiz.id) ? (
+            <div className="submission-status-box">
+
+              <p className="submitted-label">
+                Quiz Submitted
+              </p>
+
+              {getQuizSubmission(quiz.id)
+                ?.score !== null &&
+              getQuizSubmission(quiz.id)
+                ?.score !== undefined ? (
+                <>
+                  <p className="graded-label">
+                    Graded
+                  </p>
+
+                  <div className="student-grade-box">
+                    <strong>Score:</strong>{" "}
+                    {
+                      getQuizSubmission(
+                        quiz.id
+                      )?.score
+                    }
+                    /10
+                  </div>
+                </>
+              ) : (
+                <p className="pending-label">
+                  Waiting for grading
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              
+<button
+  className="register-btn submit-response-btn"
+  onClick={() => startQuiz(quiz)}
+>
+  Attempt Quiz
+</button>
+            </>
+          )}
+
+        </div>
+      ))
+    )}
+
+  </div>
+
+</section>
+
             <section className="curriculum-section">
               <div className="section-header">
                 <h3>Assignments</h3>
@@ -552,6 +1008,217 @@ const getSubmission = (assignmentId) =>
 
           </>
         )}
+
+        {activeQuiz && (
+
+  <div
+    className="modal-overlay"
+    onClick={() => setActiveQuiz(null)}
+  >
+
+    <div
+      className="quiz-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <div className="quiz-modal-header">
+
+        <div>
+          <h2>{activeQuiz.title}</h2>
+
+          <p className="quiz-course-name">
+            {activeQuiz.course?.name}
+          </p>
+        </div>
+
+        <div className="quiz-timer-box">
+
+          <span className="timer-label">
+            Time Left
+          </span>
+
+          <span className="timer-value">
+            {Math.floor(quizTimer / 60)}:
+            {String(quizTimer % 60).padStart(2, "0")}
+          </span>
+
+        </div>
+
+      </div>
+
+      <div className="quiz-instructions-box">
+        {activeQuiz.instructions}
+      </div>
+
+      <div className="quiz-questions-container">
+
+        {(quizQuestions[activeQuiz.id] || []).map(
+          (question, index) => (
+
+            <div
+              key={question.id}
+              className="quiz-question-card"
+            >
+
+              <h4 className="quiz-question-title">
+                Question {index + 1}
+              </h4>
+
+              <p className="quiz-question-text">
+                {question.question}
+              </p>
+
+              <div className="quiz-options-grid">
+
+                {[
+                  question.option_a,
+                  question.option_b,
+                  question.option_c,
+                  question.option_d,
+                ].map((option) => (
+
+                  <label
+                    key={option}
+                    className={`quiz-option-card ${
+                      quizSelections[question.id] === option
+                        ? "selected-option"
+                        : ""
+                    }`}
+                  >
+
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      value={option}
+                      checked={
+                        quizSelections[question.id] === option
+                      }
+                      onChange={() =>
+                        setQuizSelections({
+                          ...quizSelections,
+                          [question.id]: option,
+                        })
+                      }
+                    />
+
+                    <span>{option}</span>
+
+                  </label>
+                ))}
+
+              </div>
+
+            </div>
+          )
+        )}
+
+      </div>
+
+      <div className="quiz-actions">
+
+        <button
+          className="close-btn secondary-btn"
+          onClick={() => setActiveQuiz(null)}
+        >
+          Cancel
+        </button>
+
+        <div className="quiz-actions">
+
+  {quizLocked ? (
+
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "15px",
+      }}
+    >
+
+      <button
+        className="register-btn"
+        disabled
+        style={{
+          opacity: 0.5,
+          cursor: "not-allowed",
+        }}
+      >
+        Submit Quiz
+      </button>
+
+      <span
+        style={{
+          color: "#dc2626",
+          fontWeight: "600",
+        }}
+      >
+        Time is over. Cannot submit anymore.
+      </span>
+
+    </div>
+
+  ) : (
+
+    <button
+      className="register-btn"
+      onClick={finishQuiz}
+    >
+      Submit Quiz
+    </button>
+
+  )}
+
+</div>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
+{quizExpired && (
+
+  <div
+    className="modal-overlay"
+  >
+
+    <div className="modal-content">
+
+      <h2
+        style={{
+          color: "#dc2626",
+          marginBottom: "20px",
+        }}
+      >
+        Time Ran Out
+      </h2>
+
+      <p
+        style={{
+          fontSize: "18px",
+          marginBottom: "25px",
+        }}
+      >
+        You cannot attempt this quiz anymore.
+        <br />
+        Your grade is 0/10.
+      </p>
+
+      <button
+        className="register-btn"
+        onClick={() =>
+          setQuizExpired(false)
+        }
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+)}
 
         {selectedCourse && (
           <div className="modal-overlay" onClick={() => setSelectedCourse(null)}>
