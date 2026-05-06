@@ -865,3 +865,43 @@
   font-size: 14px;
   font-weight: 600;
 }
+
+.submission-status-box {
+  margin-top: 15px;
+}
+
+.graded-label {
+  display: inline-block;
+  background: #d1fae5;
+  color: #065f46;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.pending-label {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.student-grade-box {
+  margin-top: 14px;
+  font-size: 17px;
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.student-feedback-box {
+  margin-top: 10px;
+  background: #f3f4f6;
+  padding: 14px;
+  border-radius: 12px;
+  color: #374151;
+  line-height: 1.5;
+}

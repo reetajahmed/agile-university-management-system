@@ -197,7 +197,16 @@ function StudentCurriculum({ currentUser }) {
     registrations.some((item) => item.course_id === courseId);
 
   const hasSubmitted = (assignmentId) =>
-    submissions.some((item) => String(item.assignment_id) === String(assignmentId));
+  submissions.some(
+    (item) =>
+      String(item.assignment_id) === String(assignmentId)
+  );
+
+const getSubmission = (assignmentId) =>
+  submissions.find(
+    (item) =>
+      String(item.assignment_id) === String(assignmentId)
+  );
 
   const formatDeadline = (deadline) => {
     if (!deadline) return "No deadline";
@@ -336,8 +345,39 @@ function StudentCurriculum({ currentUser }) {
                       </div>
 
                       {hasSubmitted(assignment.id) ? (
-                        <p className="submitted-label">Submitted</p>
-                      ) : (
+  <div className="submission-status-box">
+
+    <p className="submitted-label">
+      Submitted
+    </p>
+
+    {getSubmission(assignment.id)?.grade !== null &&
+    getSubmission(assignment.id)?.grade !== undefined ? (
+      <>
+
+        <p className="graded-label">
+          Graded
+        </p>
+
+        <div className="student-grade-box">
+          <strong>Grade:</strong>{" "}
+          {getSubmission(assignment.id)?.grade}/10
+        </div>
+
+        <div className="student-feedback-box">
+          <strong>Feedback:</strong>{" "}
+          {getSubmission(assignment.id)?.feedback ||
+            "No feedback"}
+        </div>
+
+      </>
+    ) : (
+      <p className="pending-label">
+        Waiting for grading
+      </p>
+    )}
+  </div>
+) : (
                         <>
                           <input
                             type="file"
