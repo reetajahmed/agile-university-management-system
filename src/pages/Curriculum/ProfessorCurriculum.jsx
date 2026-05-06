@@ -25,35 +25,57 @@ function ProfessorCurriculum() {
 
   const fetchProfessorData = async () => {
     setLoading(true);
+    const {
+    data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data: doctor } = await supabase
+  .from("users")
+  .select("*")
+  .eq("auth_id", user.id)
+  .single();
 
     const { data: coursesData } = await supabase
-      .from("courses")
-      .select("*")
-      .order("name", { ascending: true });
+  .from("courses")
+  .select("*")
+  .eq("professor_id", doctor.id)
+  .order("name", { ascending: true });
+  const courseIds = (coursesData || []).map((course) => course.id);
 
     const { data: materialsData } = await supabase
       .from("course_materials")
       .select(`*, course:courses(name, "Course Code")`)
+      .in("course_id", courseIds)
       .order("id", { ascending: false });
 
     const { data: assignmentsData } = await supabase
       .from("assignments")
       .select(`*, course:courses(name, "Course Code")`)
+      .in("course_id", courseIds)
       .order("deadline", { ascending: true });
 
       const { data: submissionsData } = await supabase
-      .from("assignment_submissions")
-      .select(`
-        *,
-        assignment:assignments(title)
-      `)
-      .order("id", { ascending: false });
+  .from("assignment_submissions")
+  .select(`
+    *,
+    assignment:assignments(
+      title,
+      course_id
+    )
+  `)
+  .order("id", { ascending: false });
+  
+  const filteredSubmissions = (submissionsData || []).filter(
+  (submission) =>
+    courseIds.includes(submission.assignment?.course_id)
+);
 
     setCourses(coursesData || []);
     setMaterials(materialsData || []);
     setAssignments(assignmentsData || []);
-    setSubmissions(submissionsData || []);
+    setSubmissions(filteredSubmissions);
     setLoading(false);
+
   };
 
   const gradeSubmission = async (submissionId, grade, feedback) => {
