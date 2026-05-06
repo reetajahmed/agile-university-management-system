@@ -35,6 +35,13 @@ function ProfessorCurriculum() {
   const [quizDeadline, setQuizDeadline] = useState("");
   const [quizzes, setQuizzes] = useState([]);
 const [quizSubmissions, setQuizSubmissions] = useState([]);
+const [allQuizQuestions, setAllQuizQuestions] = useState([]);
+
+const [selectedQuizSubmission, setSelectedQuizSubmission] =
+  useState(null);
+
+const [selectedQuizQuestions, setSelectedQuizQuestions] =
+  useState([]);
 
   const [questions, setQuestions] = useState([
     {
@@ -91,6 +98,7 @@ const [quizSubmissions, setQuizSubmissions] = useState([]);
   `)
   .in("course_id", courseIds)
   .order("created_at", { ascending: false });
+  
 
     const { data: submissionsData } = await supabase
       .from("assignment_submissions")
@@ -120,6 +128,11 @@ const { data: quizSubmissionsData } = await supabase
   .in("quiz_id", quizIds)
   .order("submitted_at", { ascending: false });
 
+  const { data: allQuestionsData } =
+  await supabase
+    .from("quiz_questions")
+    .select("*");
+  
 
     const filteredSubmissions = (submissionsData || []).filter(
   (submission) =>
@@ -150,6 +163,7 @@ const { data: quizSubmissionsData } = await supabase
     setGroupedSubmissions(grouped);
     setQuizzes(quizzesData || []);
     setQuizSubmissions(quizSubmissionsData || []);
+    setAllQuizQuestions(allQuestionsData || []);
 
     setLoading(false);
   };
@@ -422,68 +436,96 @@ const createQuiz = async (e) => {
           <>
             {/* Upload Materials */}
             <section className="curriculum-section">
-              <div className="section-header">
-                <h3>Upload Course Materials</h3>
-                <span>{courses.length} courses</span>
-              </div>
 
-              <form
-                className="material-form"
-                onSubmit={uploadMaterial}
-              >
-                <select
-                  value={selectedCourseId}
-                  onChange={(e) =>
-                    setSelectedCourseId(e.target.value)
-                  }
-                >
-                  <option value="">
-                    Select course
-                  </option>
+  <div className="section-header">
+    <h3>Quiz Submissions</h3>
 
-                  {courses.map((course) => (
-                    <option
-                      key={course.id}
-                      value={course.id}
-                    >
-                      {course.name} -{" "}
-                      {course["Course Code"]}
-                    </option>
-                  ))}
-                </select>
+    <span>
+      {quizSubmissions.length} submissions
+    </span>
+  </div>
 
-                <input
-                  type="text"
-                  placeholder="Material title"
-                  value={title}
-                  onChange={(e) =>
-                    setTitle(e.target.value)
-                  }
-                />
+  <div className="quiz-submissions-grid">
 
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setFile(e.target.files[0])
-                  }
-                />
+    {quizSubmissions.length === 0 ? (
 
-                <button
-                  type="submit"
-                  disabled={uploading}
-                >
-                  {uploading
-                    ? "Uploading..."
-                    : "Upload Material"}
-                </button>
-              </form>
+      <p className="no-results">
+        No quiz submissions yet
+      </p>
 
-              {message && (
-                <p className="form-message">
-                  {message}
-                </p>
-              )}
-            </section>
+    ) : (
+
+      quizSubmissions.map((submission) => (
+
+        <div
+          key={submission.id}
+          className="quiz-submission-small-card"
+        >
+
+          <div className="quiz-card-top">
+
+            <div>
+
+              <h4 className="quiz-card-title">
+                {submission.quiz?.title}
+              </h4>
+
+              <p className="quiz-card-course">
+                {submission.quiz?.course?.name}
+              </p>
+
+              <p className="quiz-card-student">
+                Student ID:
+                {" "}
+                {submission.student_id}
+              </p>
+
+            </div>
+
+            <div className="quiz-score-badge small-score">
+              {submission.score ?? 0}/10
+            </div>
+
+          </div>
+
+          <button
+            className="view-response-btn"
+            onClick={() => {
+
+              const quizQuestions =
+                allQuizQuestions.filter(
+                  (q) =>
+                    String(q.quiz_id) ===
+                    String(submission.quiz_id)
+                );
+
+              setSelectedQuizSubmission(
+                submission
+              );
+
+              setSelectedQuizQuestions(
+                quizQuestions
+              );
+
+            }}
+          >
+            View Response
+          </button>
+
+        </div>
+
+      ))
+    )}
+
+  </div>
+
+  {gradingMessage && (
+    <p className="form-message">
+      {gradingMessage}
+    </p>
+  )}
+
+</section>
 
             {/* Materials */}
             <section className="curriculum-section">
@@ -1039,70 +1081,195 @@ const createQuiz = async (e) => {
                 </p>
               )}
             </section>
-
-            <section className="curriculum-section">
-
-  <div className="section-header">
-    <h3>Quiz Submissions</h3>
-
-    <span>
-      {quizSubmissions.length} submissions
-    </span>
-  </div>
-
-  <div className="materials-list">
-
-    {quizSubmissions.length === 0 ? (
-      <p className="no-results">
-        No quiz submissions yet
-      </p>
-    ) : (
-      quizSubmissions.map((submission) => (
-        <div
-          key={submission.id}
-          className="assignment-row"
-        >
-
-          <div className="assignment-info">
-
-            <h4>
-              {submission.quiz?.title}
-            </h4>
-
-            <p>
-              Course:{" "}
-              {
-                submission.quiz?.course
-                  ?.name
-              }
-            </p>
-
-            <p>
-              Student ID:{" "}
-              {submission.student_id}
-            </p>
-
-            <p>
-              Score:{" "}
-              {submission.score ?? 0}
-            </p>
-
-          </div>
-
-          <span className="graded-badge">
-            Submitted
-          </span>
-
-        </div>
-      ))
-    )}
-
-  </div>
-
-</section>
           </>
         )}
       </div>
+
+      {selectedQuizSubmission && (
+
+  <div
+    className="modal-overlay"
+    onClick={() =>
+      setSelectedQuizSubmission(null)
+    }
+  >
+
+    <div
+      className="quiz-review-modal"
+      onClick={(e) =>
+        e.stopPropagation()
+      }
+    >
+
+      <div className="quiz-modal-header">
+
+        <div>
+
+          <h2>
+            {
+              selectedQuizSubmission.quiz
+                ?.title
+            }
+          </h2>
+
+          <p>
+            Student ID:
+            {" "}
+            {
+              selectedQuizSubmission.student_id
+            }
+          </p>
+
+        </div>
+
+        <div className="quiz-score-badge">
+          {
+            selectedQuizSubmission.score
+          }
+          /10
+        </div>
+
+      </div>
+
+      <div className="quiz-review-container">
+
+        {selectedQuizQuestions.map(
+          (question, index) => {
+
+            const parsedAnswers =
+              selectedQuizSubmission.answers
+                ? JSON.parse(
+                    selectedQuizSubmission.answers
+                  )
+                : {};
+
+            const studentAnswer =
+              parsedAnswers[
+                question.id
+              ];
+
+            const isCorrect =
+              studentAnswer ===
+              question.correct_answer;
+
+            return (
+
+              <div
+                key={question.id}
+                className="quiz-review-question"
+              >
+
+                <h4>
+                  Q{index + 1}.
+                  {" "}
+                  {question.question}
+                </h4>
+
+                <p>
+                  <strong>
+                    Student:
+                  </strong>
+                  {" "}
+
+                  <span
+                    className={
+                      isCorrect
+                        ? "correct-answer"
+                        : "wrong-answer"
+                    }
+                  >
+                    {studentAnswer ||
+                      "No Answer"}
+                  </span>
+                </p>
+
+                <p>
+                  <strong>
+                    Correct:
+                  </strong>
+                  {" "}
+
+                  <span className="correct-answer">
+                    {
+                      question.correct_answer
+                    }
+                  </span>
+                </p>
+
+              </div>
+
+            );
+          }
+        )}
+
+      </div>
+
+      <textarea
+        className="quiz-feedback-textarea"
+        placeholder="Write feedback..."
+        defaultValue={
+          selectedQuizSubmission.feedback || ""
+        }
+        id="quiz-feedback"
+      />
+
+      <div className="quiz-actions">
+
+        <button
+          className="close-btn secondary-btn"
+          onClick={() =>
+            setSelectedQuizSubmission(null)
+          }
+        >
+          Close
+        </button>
+
+        <button
+          className="register-btn"
+          onClick={async () => {
+
+            const feedback =
+              document.getElementById(
+                "quiz-feedback"
+              ).value;
+
+            const { error } =
+              await supabase
+                .from("quiz_submissions")
+                .update({
+                  feedback,
+                })
+                .eq(
+                  "id",
+                  selectedQuizSubmission.id
+                );
+
+            if (!error) {
+
+              setGradingMessage(
+                "Feedback saved successfully."
+              );
+
+              await fetchProfessorData();
+
+              setSelectedQuizSubmission(
+                null
+              );
+
+            }
+
+          }}
+        >
+          Save Feedback
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
     </Layout>
   );
 }
