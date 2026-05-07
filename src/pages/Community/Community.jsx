@@ -32,6 +32,7 @@ function Community() {
   }, []);
 
   const isParent = currentUser?.role === "parent";
+  const isAdmin = currentUser?.role === "admin";
 
   if (loading) {
     return (
@@ -73,27 +74,30 @@ function Community() {
             </div>
 
             {!isParent && (
-              <>
-                <div
-                  className="community-card"
-                  onClick={() => navigate("/events")}
-                >
-                  <h3>Events</h3>
-                  <p>View university events</p>
-                </div>
-
-                <div
-                  className="community-card"
-                  onClick={() => navigate("/meetings")}
-                >
-                  <h3>Meetings</h3>
-                  <p>Schedule meeting with professor</p>
-                </div>
-              </>
+              <div
+                className="community-card"
+                onClick={() => navigate("/events")}
+              >
+                <h3>Events</h3>
+                <p>View university events</p>
+              </div>
             )}
 
-            {currentUser?.role !== "doctor" && (
-              <div className="community-card" onClick={() => navigate("/progress")}>
+            {!isParent && !isAdmin && (
+              <div
+                className="community-card"
+                onClick={() => navigate("/meetings")}
+              >
+                <h3>Meetings</h3>
+                <p>Schedule meeting with professor</p>
+              </div>
+            )}
+
+            {currentUser?.role !== "doctor" && !isAdmin && (
+              <div
+                className="community-card"
+                onClick={() => navigate("/progress")}
+              >
                 <h3>Progress</h3>
                 <p>
                   {isParent

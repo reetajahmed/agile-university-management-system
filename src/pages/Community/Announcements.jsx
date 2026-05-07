@@ -6,12 +6,14 @@ import "../../styles/announcements.css";
 function Announcements() {
   const [announcements, setAnnouncements] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true); // 🔥 NEW
+  const [loading, setLoading] = useState(true);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [targetRole, setTargetRole] = useState("all");
 
-  //Fetch logged-in user
+  // FETCH LOGGED-IN USER
+
   const fetchCurrentUser = async () => {
     const {
       data: { user },
@@ -28,23 +30,28 @@ function Announcements() {
     }
   };
 
-  //Fetch announcements
+  // FETCH ANNOUNCEMENTS
+
   const fetchAnnouncements = async () => {
-    setLoading(true); 
+    if (!currentUser) return;
+
+    setLoading(true);
 
     const { data, error } = await supabase
       .from("announcements")
       .select("*")
+      .in("target_role", [currentUser.role, "all"])
       .order("id", { ascending: false });
 
     if (!error && data) {
       setAnnouncements(data);
     }
 
-    setLoading(false); 
+    setLoading(false);
   };
 
-  //Create announcement (DOCTOR ONLY)
+  // CREATE ANNOUNCEMENT
+
   const createAnnouncement = async () => {
     if (!title || !content) return;
 
@@ -52,6 +59,7 @@ function Announcements() {
       {
         title,
         content,
+        target_role: targetRole,
       },
     ]);
 
@@ -63,22 +71,37 @@ function Announcements() {
 
     setTitle("");
     setContent("");
+    setTargetRole("all");
+
     fetchAnnouncements();
   };
 
+  // LOAD USER
+
   useEffect(() => {
     fetchCurrentUser();
-    fetchAnnouncements();
   }, []);
+
+  // LOAD ANNOUNCEMENTS AFTER USER LOADS
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchAnnouncements();
+    }
+  }, [currentUser]);
 
   return (
     <Layout>
       <div className="announcements-container">
+
         <h2>Announcements</h2>
 
-        {/* ONLY DOCTOR CAN SEE THIS */}
-        {currentUser?.role === "doctor" && (
+        {/* DOCTOR OR ADMIN CAN CREATE */}
+
+        {(currentUser?.role === "doctor" ||
+          currentUser?.role === "admin") && (
           <div className="create-announcement">
+
             <h3>Create Announcement</h3>
 
             <input
@@ -87,6 +110,17 @@ function Announcements() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
+
+            <select
+              value={targetRole}
+              onChange={(e) => setTargetRole(e.target.value)}
+            >
+              <option value="all">All Users</option>
+              <option value="student">Students</option>
+              <option value="doctor">Doctors</option>
+              <option value="parent">Parents</option>
+              <option value="admin">Admins</option>
+            </select>
 
             <textarea
               placeholder="Write announcement content..."
@@ -97,30 +131,48 @@ function Announcements() {
             <button onClick={createAnnouncement}>
               Post Announcement
             </button>
+
           </div>
         )}
 
-        {/*DISPLAY LOGIC */}
+        {/* DISPLAY ANNOUNCEMENTS */}
+
         {loading ? (
           <p className="loading">Loading announcements...</p>
         ) : announcements.length === 0 ? (
           <p className="no-data">No announcements available</p>
         ) : (
           <div className="announcements-list">
+
             {announcements.map((item) => (
               <div key={item.id} className="announcement-card">
+
                 <h3>{item.title}</h3>
+
                 <p>{item.content}</p>
 
-                {item.created_at && (
-                  <span className="date">
-                    {new Date(item.created_at).toLocaleString()}
+                <div className="announcement-footer">
+
+                  <span className="target-role">
+                    {item.target_role === "all"
+                      ? "All Users"
+                      : item.target_role}
                   </span>
-                )}
+
+                  {item.created_at && (
+                    <span className="date">
+                      {new Date(item.created_at).toLocaleString()}
+                    </span>
+                  )}
+
+                </div>
+
               </div>
             ))}
+
           </div>
         )}
+
       </div>
     </Layout>
   );

@@ -5,6 +5,7 @@ import "../styles/navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
+
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,28 +41,55 @@ function Navbar() {
   }
 
   const isParent = currentUser?.role === "parent";
+  const isAdmin = currentUser?.role === "admin";
 
   return (
-  <nav className="navbar">
-    <div className="nav-left">
-      {!isParent && <NavLink to="/home">Home</NavLink>}
-      <NavLink to="/community">Community</NavLink>
+    <nav className="navbar">
 
-      {!isParent && (
-        <>
-          <NavLink to="/curriculum">Curriculum</NavLink>
-          <NavLink to="/staff">Staff</NavLink>
-          <NavLink to="/facilities">Facilities</NavLink>
-        </>
-      )}
-    </div>
+      <div className="nav-left">
 
-    <div className="nav-right">
-      <button className="logout-btn" onClick={handleLogout}>
-        Logout
-      </button>
-    </div>
-  </nav>
+        {!isParent && (
+          <NavLink to="/home">Home</NavLink>
+        )}
+
+        <NavLink to="/community">
+          Community
+        </NavLink>
+
+        {!isParent && (
+          <>
+
+            {!isAdmin && (
+              <NavLink to="/curriculum">
+                Curriculum
+              </NavLink>
+            )}
+
+            <NavLink to="/staff">
+              Staff
+            </NavLink>
+
+            <NavLink to="/facilities">
+              Facilities
+            </NavLink>
+
+          </>
+        )}
+
+      </div>
+
+      <div className="nav-right">
+
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </nav>
   );
 }
 
