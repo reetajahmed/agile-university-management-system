@@ -90,7 +90,7 @@ function Messaging() {
     fetchConversations(currentUser);
   };
 
-  // 🔹 SEARCH USERS (REAL-TIME)
+  //SEARCH USERS (REAL-TIME)
   const searchUser = async (value) => {
     setSearchEmail(value);
 
