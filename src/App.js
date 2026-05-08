@@ -7,7 +7,6 @@ import Staff from "./pages/Staff/Staff";
 import Facilities from "./pages/Facilities/Facilities";
 import Messaging from "./pages/Community/Messaging";
 import Announcements from "./pages/Community/Announcements";
-import Signup from "./pages/Auth/Signup";
 import Login from "./pages/Auth/Login";
 import Events from "./pages/Community/Events";
 import Meetings from "./pages/Community/Meetings";
@@ -28,7 +27,6 @@ function App() {
         <Route path="/facilities" element={<Facilities />} />
         <Route path="/messages" element={<Messaging />} />
         <Route path="/announcements" element={<Announcements />} />
-        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/events" element={<Events />} />
         <Route path="/meetings" element={<Meetings />} />

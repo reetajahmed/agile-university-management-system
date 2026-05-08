@@ -70,8 +70,7 @@ function Login() {
         <button onClick={handleLogin}>Login</button>
 
         <div className="auth-footer">
-          Don’t have an account?{" "}
-          <a href="/signup">Sign up</a>
+          Contact the administrator if you do not have an account.
         </div>
 
       </div>
